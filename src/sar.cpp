@@ -96,7 +96,8 @@ double SAR_draw_rho(const mat& detval,const mat& e0e0,const mat& eded,const mat&
 // [[Rcpp::export]]
 
 List sar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::mat detval, 
-                   int burnin, int Nsim){
+                   int burnin, int Nsim, int thinning, 
+                   float rho_start, float sigma2e_start, arma::vec betas_start){
   
   //Starting the MCMC SET UP
   
@@ -105,7 +106,7 @@ List sar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::mat detval,
     
   //Prior distribution specifications
   //For Betas
-  vec M0 = zeros(p);
+  vec M0 = betas_start;
   
   mat T0 = 100.0 * eye<mat>(p,p);
   
@@ -114,18 +115,17 @@ List sar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::mat detval,
   int d0(0.01);
   
   //Store MCMC results
-  //int Nsim = 10000;
-  //int burnin = 5000;
+  mat Betas = zeros(Nsim-burnin, p);
   
-  mat Betas = zeros(Nsim, p);
-    
-  vec sigma2e = zeros(Nsim);
+  vec sigma2e = zeros(Nsim-burnin);
   
-  vec rho = zeros(Nsim);
+  vec rho = zeros(Nsim-burnin);
   
   //initial values for model parameters
-  sigma2e[0] = 2;
-  rho[0] = 0.5;
+  float sigma2e_i(sigma2e_start);
+  float sigma2e_ip1(sigma2e_start);
+  float rho_i(rho_start);
+  float rho_ip1(rho_start);
   
   int ce( n/2 + c0 );
   
@@ -152,21 +152,20 @@ List sar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::mat detval,
   
   // initialise A
   sp_mat I_sp = speye<sp_mat>(n,n);
-  sp_mat A = I_sp - rho[0] * W;
+  sp_mat A = I_sp - rho_i * W;
  
   // MCMC updating  
-  
-  for(int i=1;i<Nsim;i++) {
+  for(int i=1;i<=Nsim*thinning;i++) {
     // Gibbs sampler for updating Betas
-    mat VV = (1.0/sigma2e[i-1]) *XTX + invT0;
+    mat VV = (1.0/sigma2e_i) *XTX + invT0;
     // We use Cholesky decomption to inverse the covariance matrix
     mat vBetas = inv_sympd(VV) ;//chol2inv(chol(VV))
     
     // Define A=I-rho*W 
-    A = I_sp - rho[i-1] * W;
+    A = I_sp - rho_i * W;
     
     vec Ay = A*y;
-    mat mBetas = vBetas * (tX * (1.0/sigma2e[i-1])*Ay+T0M0);
+    mat mBetas = vBetas * (tX * (1.0/sigma2e_i)*Ay+T0M0);
     
     // When the number of independent variables is large, drawing from multivariate 
     // distribution could be time-comsuming
@@ -174,51 +173,62 @@ List sar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::mat detval,
     // draw form p-dimensitional independent norm distribution
     mat betas = rnorm(p);
     betas = mBetas + cholV * betas;
-    Betas.row(i) = trans(betas);
   
     //### Gibbs sampler for updating sigma2e
     mat Xb = X*betas;
     mat e = Ay - Xb;
     mat de = 0.5 * trans(e) * e + d0;
     
-    sigma2e(i) = 1/Rf_rgamma(ce,1/de(0,0));
-    rho(i) = SAR_draw_rho(detval, e0e0, eded, e0ed, sigma2e[i]);    
+    sigma2e_ip1 = 1/Rf_rgamma(ce,1/de(0,0));
+    rho_ip1 = SAR_draw_rho(detval, e0e0, eded, e0ed, sigma2e_ip1); 
+    
+    rho_i = rho_ip1;
+    sigma2e_i = sigma2e_ip1;
+    
+    if(i>(burnin*thinning)) 
+    {
+      if (i%thinning==0) 
+      {
+        Betas.row(int(i-burnin*thinning)/thinning-1) = trans(betas);
+        sigma2e[int(i-burnin*thinning)/thinning-1] = sigma2e_i;
+        rho[int(i-burnin*thinning)/thinning-1] = rho_i;
+      }
+    }
   }
   
   // evaluate diagnostics
-  vec log_lik_samples = zeros(Nsim-burnin+1);
+  vec log_lik_samples = zeros(Nsim-burnin);
   
-  for(int i=burnin;i<Nsim;i++)
+  for(int i=0;i<(Nsim-burnin);i++)
   {
-  log_lik_samples[i-burnin] = SAR_loglikelihood( X, y, rho[i], Betas.row(i), 
+  log_lik_samples[i] = SAR_loglikelihood( X, y, rho[i], Betas.row(i), 
                                     sigma2e[i], detval, W );
   }
-  double log_lik_mean_theta = SAR_loglikelihood( X, y, mean( rho.subvec(burnin-1,Nsim-1) ),
-                              mean( Betas.submat( burnin-1,0,Nsim-1,p-1  ) ), 
-                             mean( sigma2e.subvec(burnin-1,Nsim-1) ), detval, 
+  double log_lik_mean_theta = SAR_loglikelihood( X, y, mean( rho ),
+                              mean( Betas ), 
+                             mean( sigma2e ), detval, 
                              W = W);
 
   double dic, pd;
   diagnostic_dic_pd(log_lik_samples,log_lik_mean_theta, dic, pd);
   
-  double r2 = diagnostic_Rsquared(y, y_hat_sar(X, mean( Betas.submat( burnin-1,0,Nsim-1,p-1  ) ), mean( rho.subvec(burnin-1,Nsim-1) ),W ));
+  double r2 = diagnostic_Rsquared(y, y_hat_sar(X, mean( Betas ), mean( rho ),W ));
 
   mat direct, indirect, total;
-  diagnostic_impacts( mean( Betas.submat( burnin-1,0,Nsim-1,p-1  ) ), mean( rho.subvec(burnin-1,Nsim-1) ),W ,
-            direct, indirect, total);
+  diagnostic_impacts( mean( Betas ), mean( rho ),W , direct, indirect, total);
 
-  return List ::create( Named("Mbetas")= mean( Betas.submat( burnin-1,0,Nsim-1,p-1  ) ), 
-                             Named("SDbetas") = stddev( Betas.tail_rows( Nsim-burnin )  ),
-                             Named("Mrho")= mean( rho.subvec(burnin-1,Nsim-1) ), 
-                             Named("SDrho") = stddev( rho.subvec(burnin-1,Nsim-1) ),
-                             Named("Msigma2e")= mean( sigma2e.subvec(burnin-1,Nsim-1) ), 
-                             Named("SDsigma2e") = stddev( sigma2e.subvec(burnin-1,Nsim-1) ),
+  return List ::create( Named("Mbetas")= mean( Betas ), 
+                             Named("SDbetas") = stddev( Betas ),
+                             Named("Mrho")= mean( rho ), 
+                             Named("SDrho") = stddev( rho ),
+                             Named("Msigma2e")= mean( sigma2e ), 
+                             Named("SDsigma2e") = stddev( sigma2e ),
                              Named("DIC") = dic,
                              Named("pD") = pd,
                              Named("Log_Likelihood") = log_lik_mean_theta,
                              Named("R_Squared") = r2,
                              Named("impact_direct") = direct,
-                             Named("impact_idirect") = indirect,
+                             Named("impact_indirect") = indirect,
                              Named("impact_total") = total
                              ); 
     

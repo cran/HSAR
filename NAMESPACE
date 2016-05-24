@@ -1,5 +1,6 @@
 useDynLib(HSAR)
 
+import (stats)
 importFrom("spdep", "mat2listw")
 importFrom("spdep", "do_ldet")
 importFrom("spdep", "mcdet_setup")
@@ -11,11 +12,19 @@ export(summary.mcmc_hsar)
 export(summary.mcmc_sar)
 export(summary.mcmc_hsar_rho_0)
 export(summary.mcmc_hsar_lambda_0)
+export(print.mcmc_hsar)
+export(print.mcmc_sar)
+export(print.mcmc_hsar_rho_0)
+export(print.mcmc_hsar_lambda_0)
 
 S3method(summary, mcmc_hsar)
 S3method(summary, mcmc_sar)
 S3method(summary, mcmc_hsar_rho_0)
 S3method(summary, mcmc_hsar_lambda_0)
+S3method(print, mcmc_hsar)
+S3method(print, mcmc_sar)
+S3method(print, mcmc_hsar_rho_0)
+S3method(print, mcmc_hsar_lambda_0)
 
 
 

@@ -7,8 +7,8 @@
 using namespace Rcpp;
 
 // hsar_cpp_arma
-List hsar_cpp_arma(arma::mat X, arma::vec y, arma::sp_mat W, arma::sp_mat M, arma::sp_mat Z, arma::mat detval, arma::mat detvalM, arma::vec Unum, int burnin, int Nsim);
-RcppExport SEXP HSAR_hsar_cpp_arma(SEXP XSEXP, SEXP ySEXP, SEXP WSEXP, SEXP MSEXP, SEXP ZSEXP, SEXP detvalSEXP, SEXP detvalMSEXP, SEXP UnumSEXP, SEXP burninSEXP, SEXP NsimSEXP) {
+List hsar_cpp_arma(arma::mat X, arma::vec y, arma::sp_mat W, arma::sp_mat M, arma::sp_mat Z, arma::mat detval, arma::mat detvalM, arma::vec Unum, int burnin, int Nsim, int thinning, float rho_start, float lambda_start, float sigma2e_start, float sigma2u_start, arma::vec betas_start);
+RcppExport SEXP HSAR_hsar_cpp_arma(SEXP XSEXP, SEXP ySEXP, SEXP WSEXP, SEXP MSEXP, SEXP ZSEXP, SEXP detvalSEXP, SEXP detvalMSEXP, SEXP UnumSEXP, SEXP burninSEXP, SEXP NsimSEXP, SEXP thinningSEXP, SEXP rho_startSEXP, SEXP lambda_startSEXP, SEXP sigma2e_startSEXP, SEXP sigma2u_startSEXP, SEXP betas_startSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -22,13 +22,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type Unum(UnumSEXP);
     Rcpp::traits::input_parameter< int >::type burnin(burninSEXP);
     Rcpp::traits::input_parameter< int >::type Nsim(NsimSEXP);
-    __result = Rcpp::wrap(hsar_cpp_arma(X, y, W, M, Z, detval, detvalM, Unum, burnin, Nsim));
+    Rcpp::traits::input_parameter< int >::type thinning(thinningSEXP);
+    Rcpp::traits::input_parameter< float >::type rho_start(rho_startSEXP);
+    Rcpp::traits::input_parameter< float >::type lambda_start(lambda_startSEXP);
+    Rcpp::traits::input_parameter< float >::type sigma2e_start(sigma2e_startSEXP);
+    Rcpp::traits::input_parameter< float >::type sigma2u_start(sigma2u_startSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type betas_start(betas_startSEXP);
+    __result = Rcpp::wrap(hsar_cpp_arma(X, y, W, M, Z, detval, detvalM, Unum, burnin, Nsim, thinning, rho_start, lambda_start, sigma2e_start, sigma2u_start, betas_start));
     return __result;
 END_RCPP
 }
 // hsar_cpp_arma_lambda_0
-List hsar_cpp_arma_lambda_0(arma::mat X, arma::vec y, arma::sp_mat W, arma::sp_mat Z, arma::mat detval, arma::vec Unum);
-RcppExport SEXP HSAR_hsar_cpp_arma_lambda_0(SEXP XSEXP, SEXP ySEXP, SEXP WSEXP, SEXP ZSEXP, SEXP detvalSEXP, SEXP UnumSEXP) {
+List hsar_cpp_arma_lambda_0(arma::mat X, arma::vec y, arma::sp_mat W, arma::sp_mat Z, arma::mat detval, arma::vec Unum, int burnin, int Nsim, int thinning, float rho_start, float sigma2e_start, float sigma2u_start, arma::vec betas_start);
+RcppExport SEXP HSAR_hsar_cpp_arma_lambda_0(SEXP XSEXP, SEXP ySEXP, SEXP WSEXP, SEXP ZSEXP, SEXP detvalSEXP, SEXP UnumSEXP, SEXP burninSEXP, SEXP NsimSEXP, SEXP thinningSEXP, SEXP rho_startSEXP, SEXP sigma2e_startSEXP, SEXP sigma2u_startSEXP, SEXP betas_startSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -38,13 +44,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::sp_mat >::type Z(ZSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type detval(detvalSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type Unum(UnumSEXP);
-    __result = Rcpp::wrap(hsar_cpp_arma_lambda_0(X, y, W, Z, detval, Unum));
+    Rcpp::traits::input_parameter< int >::type burnin(burninSEXP);
+    Rcpp::traits::input_parameter< int >::type Nsim(NsimSEXP);
+    Rcpp::traits::input_parameter< int >::type thinning(thinningSEXP);
+    Rcpp::traits::input_parameter< float >::type rho_start(rho_startSEXP);
+    Rcpp::traits::input_parameter< float >::type sigma2e_start(sigma2e_startSEXP);
+    Rcpp::traits::input_parameter< float >::type sigma2u_start(sigma2u_startSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type betas_start(betas_startSEXP);
+    __result = Rcpp::wrap(hsar_cpp_arma_lambda_0(X, y, W, Z, detval, Unum, burnin, Nsim, thinning, rho_start, sigma2e_start, sigma2u_start, betas_start));
     return __result;
 END_RCPP
 }
 // hsar_cpp_arma_rho_0
-List hsar_cpp_arma_rho_0(arma::mat X, arma::vec y, arma::sp_mat M, arma::sp_mat Z, arma::mat detvalM, arma::vec Unum);
-RcppExport SEXP HSAR_hsar_cpp_arma_rho_0(SEXP XSEXP, SEXP ySEXP, SEXP MSEXP, SEXP ZSEXP, SEXP detvalMSEXP, SEXP UnumSEXP) {
+List hsar_cpp_arma_rho_0(arma::mat X, arma::vec y, arma::sp_mat M, arma::sp_mat Z, arma::mat detvalM, arma::vec Unum, int burnin, int Nsim, int thinning, float lambda_start, float sigma2e_start, float sigma2u_start, arma::vec betas_start);
+RcppExport SEXP HSAR_hsar_cpp_arma_rho_0(SEXP XSEXP, SEXP ySEXP, SEXP MSEXP, SEXP ZSEXP, SEXP detvalMSEXP, SEXP UnumSEXP, SEXP burninSEXP, SEXP NsimSEXP, SEXP thinningSEXP, SEXP lambda_startSEXP, SEXP sigma2e_startSEXP, SEXP sigma2u_startSEXP, SEXP betas_startSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -54,13 +67,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::sp_mat >::type Z(ZSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type detvalM(detvalMSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type Unum(UnumSEXP);
-    __result = Rcpp::wrap(hsar_cpp_arma_rho_0(X, y, M, Z, detvalM, Unum));
+    Rcpp::traits::input_parameter< int >::type burnin(burninSEXP);
+    Rcpp::traits::input_parameter< int >::type Nsim(NsimSEXP);
+    Rcpp::traits::input_parameter< int >::type thinning(thinningSEXP);
+    Rcpp::traits::input_parameter< float >::type lambda_start(lambda_startSEXP);
+    Rcpp::traits::input_parameter< float >::type sigma2e_start(sigma2e_startSEXP);
+    Rcpp::traits::input_parameter< float >::type sigma2u_start(sigma2u_startSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type betas_start(betas_startSEXP);
+    __result = Rcpp::wrap(hsar_cpp_arma_rho_0(X, y, M, Z, detvalM, Unum, burnin, Nsim, thinning, lambda_start, sigma2e_start, sigma2u_start, betas_start));
     return __result;
 END_RCPP
 }
 // sar_cpp_arma
-List sar_cpp_arma(arma::mat X, arma::vec y, arma::sp_mat W, arma::mat detval, int burnin, int Nsim);
-RcppExport SEXP HSAR_sar_cpp_arma(SEXP XSEXP, SEXP ySEXP, SEXP WSEXP, SEXP detvalSEXP, SEXP burninSEXP, SEXP NsimSEXP) {
+List sar_cpp_arma(arma::mat X, arma::vec y, arma::sp_mat W, arma::mat detval, int burnin, int Nsim, int thinning, float rho_start, float sigma2e_start, arma::vec betas_start);
+RcppExport SEXP HSAR_sar_cpp_arma(SEXP XSEXP, SEXP ySEXP, SEXP WSEXP, SEXP detvalSEXP, SEXP burninSEXP, SEXP NsimSEXP, SEXP thinningSEXP, SEXP rho_startSEXP, SEXP sigma2e_startSEXP, SEXP betas_startSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -70,7 +90,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type detval(detvalSEXP);
     Rcpp::traits::input_parameter< int >::type burnin(burninSEXP);
     Rcpp::traits::input_parameter< int >::type Nsim(NsimSEXP);
-    __result = Rcpp::wrap(sar_cpp_arma(X, y, W, detval, burnin, Nsim));
+    Rcpp::traits::input_parameter< int >::type thinning(thinningSEXP);
+    Rcpp::traits::input_parameter< float >::type rho_start(rho_startSEXP);
+    Rcpp::traits::input_parameter< float >::type sigma2e_start(sigma2e_startSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type betas_start(betas_startSEXP);
+    __result = Rcpp::wrap(sar_cpp_arma(X, y, W, detval, burnin, Nsim, thinning, rho_start, sigma2e_start, betas_start));
     return __result;
 END_RCPP
 }

@@ -66,7 +66,9 @@ double HSAR_loglikelihood(const mat& X, const mat& y, double rho,
 
 List hsar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::sp_mat M, 
                       arma::sp_mat Z, arma::mat detval, arma::mat detvalM, 
-                      arma::vec Unum, int burnin, int Nsim){
+                      arma::vec Unum, int burnin, int Nsim, int thinning,
+                      float rho_start, float lambda_start, 
+                      float sigma2e_start, float sigma2u_start, arma::vec betas_start ){
   
   //Starting the MCMC SET UP
   //arma_rng::set_seed(124);
@@ -74,10 +76,10 @@ List hsar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::sp_mat M,
   int n = X.n_rows;
   int p = X.n_cols;
   int Utotal = M.n_rows;
-  
+    
   //Prior distribution specifications
   //For Betas
-  vec M0 = zeros(p);
+  vec M0 = betas_start;
   
   mat T0 = 100.0 * eye<mat>(p,p);
   
@@ -88,24 +90,21 @@ List hsar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::sp_mat M,
   int b0(0.01);
   
   //Store MCMC results
-  //int Nsim = 10000;
-  //int burnin = 5000;
-  
-  mat Betas = zeros(Nsim, p);
-  mat Us = zeros(Nsim, Utotal);
+  mat Betas = zeros(Nsim-burnin, p);
+  mat Us = zeros(Nsim-burnin, Utotal);
     
-  vec sigma2e = zeros(Nsim);
-  vec sigma2u = zeros(Nsim);
+  vec sigma2e = zeros(Nsim-burnin);
+  vec sigma2u = zeros(Nsim-burnin);
   
-  vec rho = zeros(Nsim);
-  vec lambda = zeros(Nsim);
+  vec rho = zeros(Nsim-burnin);
+  vec lambda = zeros(Nsim-burnin);
   
   //initial values for model parameters
-  sigma2e[0] = 2;
-  sigma2u[0] = 2;
+  float sigma2e_i(sigma2e_start), sigma2e_ip1(sigma2e_start);
+  float sigma2u_i(sigma2u_start), sigma2u_ip1(sigma2u_start);
   
-  rho[0] = 0.5;
-  lambda[0] = 0.5;
+  float rho_i(rho_start), rho_ip1(rho_start);
+  float lambda_i(lambda_start), lambda_ip1(lambda_start);
   
   int ce( n/2 + c0 );
   int au( Utotal/2 + a0 );
@@ -134,27 +133,28 @@ List hsar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::sp_mat M,
   
   // initialise A
   sp_mat I_sp_A = speye<sp_mat>(n,n);
-  sp_mat A = I_sp_A - rho[0] * W;
+  sp_mat A = I_sp_A - rho_i * W;
  
  //  initialise B
   sp_mat I_sp_B = speye<sp_mat>(Utotal,Utotal);
-  sp_mat B = I_sp_B - lambda[0] * M;
+  sp_mat B = I_sp_B - lambda_i * M;
 
   // MCMC updating
-  
-  for(int i=1;i<Nsim;i++) {
+  mat us = zeros(Utotal);
+  for(int i=1;i<=Nsim*thinning;i++) {
     // Gibbs sampler for updating Betas
-    mat VV = (1.0/sigma2e[i-1]) *XTX + invT0;
+    mat VV = (1.0/sigma2e_i) *XTX + invT0;
     // We use Cholesky decomption to inverse the covariance matrix
     mat vBetas = inv_sympd(VV) ;//chol2inv(chol(VV))
     
     //clock_t A_start_time = clock();
     // Define A=I-rho*W 
-    A = I_sp_A - rho[i-1] * W;
+    A = I_sp_A - rho_i * W;
     
     vec Ay = A*y;
-    vec ZUs = Z*trans(Us.row(i-1)) ; //ZUs <- as.numeric(Z%*%Us[i-1,])
-    mat mBetas = vBetas * (tX * (1.0/sigma2e[i-1])*(Ay-ZUs)+T0M0);    
+    vec ZUs = Z*us ;
+    
+    mat mBetas = vBetas * (tX * (1.0/sigma2e_i)*(Ay-ZUs)+T0M0);    
     
     // When the number of independent variables is large, drawing from multivariate 
     // distribution could be time-comsuming
@@ -162,26 +162,24 @@ List hsar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::sp_mat M,
     // draw form p-dimensitional independent norm distribution
     mat betas = Rcpp::rnorm(p);
     betas = mBetas + cholV * betas;
-    Betas.row(i) = trans(betas);
   
     // Gibbs sampler for updating U. Now, us are spatially dependent.
 
     // Define and update B=I-lambda*M
-    B = I_sp_B - lambda[i-1] * M;
-    mat vU = tZ * (1.0/sigma2e[i-1])*Z+ trans(B) * (1.0/sigma2u[i-1])*B;
+    B = I_sp_B - lambda_i * M;
+    mat vU = tZ * (1.0/sigma2e_i)*Z+ trans(B) * (1.0/sigma2u_i)*B;
     vU = inv_sympd(vU); //vU <- chol2inv(chol(vU))
 
     vec Xb = X*betas;
-    mat mU = vU * (tZ * (1.0/sigma2e[i-1])*(Ay-Xb ));
+    mat mU = vU * (tZ * (1.0/sigma2e_i)*(Ay-Xb ));
    
     // When the number of higher level units is large, drawing from multivariate 
     // distribution could be time-comsuming
     cholV = trans(chol(vU));
 
     // draw form J-dimensitional independent norm distribution
-    mat us = Rcpp::rnorm(Utotal);
+    us = Rcpp::rnorm(Utotal);
     us = mU + cholV * us;
-    Us.row(i) = trans(us);  
 
     // Gibbs sampler for updating sigma2e
     mat Zu;
@@ -194,12 +192,12 @@ List hsar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::sp_mat M,
     mat e = Ay - Zu -Xb;
     mat de = 0.5 * trans(e) * e + d0;
     
-    sigma2e(i) = 1/Rf_rgamma(ce,1/de(0,0));
+    sigma2e_ip1 = 1/Rf_rgamma(ce,1/de(0,0));
     
    // Gibbs sampler for updating sigma2u
    vec Bus = B*us;
    mat bu = 0.5 * trans(Bus) * Bus + b0;
-   sigma2u(i) = 1/Rf_rgamma(au,1/bu(0,0));
+   sigma2u_ip1 = 1/Rf_rgamma(au,1/bu(0,0));
    
    // Giddy Gibbs integration and inverse sampling for rho
     mat betau = solve(X,Zu);
@@ -210,8 +208,7 @@ List hsar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::sp_mat M,
     mat edeu = trans(ed) * eu;
     
     //clock_t rho_start_time = clock();
-    rho(i) = HSAR_draw_rho(detval, e0e0, eded, eueu, e0ed, e0eu,
-    edeu, sigma2e[i]);    
+    rho_ip1 = HSAR_draw_rho(detval, e0e0, eded, eueu, e0ed, e0eu, edeu, sigma2e_ip1);    
     
     // Giddy Gibbs integration and inverse sampling for lambda
         
@@ -220,51 +217,69 @@ List hsar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::sp_mat M,
     mat Mu = M * us;
     mat uMMu = trans(Mu) * Mu;
    
-    lambda(i) = HSAR_draw_lambda(detvalM, uu, uMu, uMMu, sigma2u[i]);
+    lambda_ip1 = HSAR_draw_lambda(detvalM, uu, uMu, uMMu, sigma2u_ip1);
+    
+    rho_i = rho_ip1;lambda_i = lambda_ip1;
+    sigma2e_i = sigma2e_ip1;sigma2u_i = sigma2u_ip1;
+    
+    if(i>(burnin*thinning)) 
+    {
+      if (i%thinning==0) 
+      {
+        Betas.row(int(i-burnin*thinning)/thinning-1) = trans(betas);
+        Us.row(int(i-burnin*thinning)/thinning-1) = trans(us);
+        
+        sigma2e[int(i-burnin*thinning)/thinning-1] = sigma2e_i;
+        sigma2u[int(i-burnin*thinning)/thinning-1] = sigma2u_i;
+        
+        rho[int(i-burnin*thinning)/thinning-1] = rho_i;
+        lambda[int(i-burnin*thinning)/thinning-1] = lambda_i;
+      }
+    }
   }
   
   // Diagnostics
-  vec log_lik_samples = zeros(Nsim-burnin+1);
+  vec log_lik_samples = zeros(Nsim-burnin);
   
-  for(int i=burnin;i<Nsim;i++)
+  for(int i=0;i<(Nsim-burnin);i++)
   {
-  log_lik_samples[i-burnin] = HSAR_loglikelihood( X, y, rho[i], Betas.row(i), 
+  log_lik_samples[i] = HSAR_loglikelihood( X, y, rho[i], Betas.row(i), 
                                     Us.row(i),Unum,Utotal,
                                     sigma2e[i], detval, W );
   }
-  double log_lik_mean_theta = HSAR_loglikelihood( X, y, mean( rho.subvec(burnin-1,Nsim-1) ),
-                              mean( Betas.submat( burnin-1,0,Nsim-1,p-1  ) ), 
-                              mean( Us.tail_rows( Nsim-burnin ) ), Unum,Utotal,
-                             mean( sigma2e.subvec(burnin-1,Nsim-1) ), detval, 
+  double log_lik_mean_theta = HSAR_loglikelihood( X, y, mean( rho ),
+                              mean( Betas ), 
+                              mean( Us ), Unum,Utotal,
+                             mean( sigma2e ), detval, 
                              W);
                              
   double dic, pd;
   diagnostic_dic_pd(log_lik_samples,log_lik_mean_theta, dic, pd);
   
-  double r2 = diagnostic_Rsquared(y, y_hat_hsar(X, mean( Betas.submat( burnin-1,0,Nsim-1,p-1  ) ), mean( rho.subvec(burnin-1,Nsim-1) ), W, Z ,mean( Us.tail_rows( Nsim-burnin ) ) ));
+  double r2 = diagnostic_Rsquared(y, y_hat_hsar(X, mean( Betas ), mean( rho ), W, Z ,mean( Us ) ));
   
   mat direct, indirect, total;
-  diagnostic_impacts( mean( Betas.submat( burnin-1,0,Nsim-1,p-1  ) ), mean( rho.subvec(burnin-1,Nsim-1) ),W ,
+  diagnostic_impacts( mean( Betas ), mean( rho ),W ,
             direct, indirect, total);
             
-  return List ::create( Named("Mbetas")= mean( Betas.tail_rows( Nsim-burnin ) ), 
-                             Named("SDbetas") = stddev( Betas.tail_rows( Nsim-burnin )  ),
-                             Named("Mrho")= mean( rho.subvec(burnin-1,Nsim-1) ), 
-                             Named("SDrho") = stddev( rho.subvec(burnin-1,Nsim-1) ),
-                             Named("Mlambda")= mean( lambda.subvec(burnin-1,Nsim-1) ), 
-                             Named("SDlambda") = stddev( lambda.subvec(burnin-1,Nsim-1) ),
-                             Named("Msigma2e")= mean( sigma2e.subvec(burnin-1,Nsim-1) ), 
-                             Named("SDsigma2e") = stddev( sigma2e.subvec(burnin-1,Nsim-1)),
-                             Named("Msigma2u")= mean( sigma2u.subvec(burnin-1,Nsim-1) ), 
-                             Named("SDsigma2u") = stddev( sigma2u.subvec(burnin-1,Nsim-1)),
-                             Named("Mus")= mean( Us.tail_rows( Nsim-burnin ) ), 
-                             Named("SDus") = stddev( Us.tail_rows( Nsim-burnin )  ),
+  return List ::create( Named("Mbetas")= mean( Betas ), 
+                             Named("SDbetas") = stddev( Betas ),
+                             Named("Mrho")= mean( rho ), 
+                             Named("SDrho") = stddev( rho ),
+                             Named("Mlambda")= mean( lambda ), 
+                             Named("SDlambda") = stddev( lambda ),
+                             Named("Msigma2e")= mean( sigma2e ), 
+                             Named("SDsigma2e") = stddev( sigma2e ),
+                             Named("Msigma2u")= mean( sigma2u ), 
+                             Named("SDsigma2u") = stddev( sigma2u ),
+                             Named("Mus")= mean( Us ), 
+                             Named("SDus") = stddev( Us ),
                              Named("DIC") = dic,
                              Named("pD") = pd,
                              Named("Log_Likelihood") = log_lik_mean_theta,
                              Named("R_Squared") = r2,
                              Named("impact_direct") = direct,
-                             Named("impact_idirect") = indirect,
+                             Named("impact_indirect") = indirect,
                              Named("impact_total") = total
                              ); 
     

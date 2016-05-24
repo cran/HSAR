@@ -6,13 +6,13 @@
 Hierarchical Spatial Autoregressive Model (HSAR)
 }
 \description{
-A library of the Hierarchical Spatial Autoregressive Model (HSAR), based on a Bayesian Markov Chain Monte Carlo (MCMC) algorithm. }
+Implements a Hierarchical Spatial Simultaneous Autoregressive Model (HSAR) or a multi-scale spatial econometrics model, with inference in a Bayesian setting using Markov chain Monte Carlo (MCMC) simulation. The appraoch is developed for modelling geographic data with a hierarchical/nested structure, for example, houses nesting into districts or fine-grained spatial units into more aggregated units. The HSAR model brings together the spatial econometrics and multilevel models and thus suitable for a simultaneous capturing the potential spatial dependence (autocorrelations) at each level of the data hierarchy arising from geographical proximity effect and the contextual effect (or group dependence effect) from higher-level units upon lower-level units. }
 \details{
 \tabular{ll}{
 Package: \tab HSAR\cr
 Type: \tab Package\cr
-Version: \tab 0.3.6\cr
-Date: \tab 2015-12-21\cr
+Version: \tab 0.4.0\cr
+Date: \tab 2016-05-20\cr
 License: \tab GPL (>= 2)
 }
 
@@ -20,10 +20,19 @@ License: \tab GPL (>= 2)
 
 \author{
 Guanpeng Dong, Richard Harris, Angelos Mimis
-Maintainer: Angelos Mimis <mimis@panteion.gr>
+\email{ <mimis@panteion.gr>}
 }
 
 \references{
-Dong, D. and Harris, R. 2014. Spatial Autoregressive Models for Geographically Hierarchical Data Structures. Geographical Analysis, 1-19. }
+Anselin, L. (1988). \emph{Spatial Econometrics: Methods and Models}. Dordrecht: Kluwer Academic Publishers.
+
+
+Goldstein, H. (2003). \emph{Multilevel Statistical Methods, 3rd ed}. London: Arnold.
+
+
+LeSage, J. P., and R. K. Pace. (2009). \emph{Introduction to Spatial Econometrics}. Boca Raton, FL: CRC Press/Taylor & Francis
+
+
+Dong, G. and Harris, R. 2015. Spatial Autoregressive Models for Geographically Hierarchical Data Structures. \emph{Geographical Analysis}, 47:173-191. }
 
 \keyword{ spatial econometrics }

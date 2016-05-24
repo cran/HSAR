@@ -3,35 +3,29 @@ summary.mcmc_hsar <- function(object, ...)
 {
   x<-object
   cat("\nCall:\n")
-  if ( class(x)=="mcmc_hsar" ){
-    cat("hsar( X, y, W, M, Z, Unum ) \n")
-  }
-  if ( class(x)=="mcmc_hsar_rho_0" ){
-    cat("hsar( X, y, M, Z, Unum ) \n")
-  }
-  if ( class(x)=="mcmc_hsar_lambda_0" ){
-    cat("hsar( X, y, W, Z, Unum ) \n")
-  }
+  print(x$call)
+  
+  cat("Type:", ' hsar ', "\n")
   
   cat("\nCoefficients:\n")
-  print(x$Mbetas)
-  cat("\n")
+  print( put_labels_to_coefficients(x$Mbetas, x$labels) )
   
-  cat("\n Spatial coefficients\n")
-  cat("Strength of the spatial interaction rho",x$Mrho, "\n")
-  cat("Strength of the spatial interaction at higher level lambda",x$Mlambda, "\n")
+  cat("\n Spatial Coefficients:\n")
+  print( cbind( rho= x$Mrho, lambda=x$Mlambda) )
   
   cat("\n Diagnostics \n")
-  cat("\n Deviance information criterion (DIC):", x$DIC, "\n")
+  cat("Deviance information criterion (DIC):", x$DIC, "\n")
   cat("Effective number of parameters (pd):", x$pD, "\n")
-  cat("\n Log likelihood:", x$Log_Likelihood, "\n")
-  cat("\n Pseudo R squared:", x$R_Squared, "\n")
+  cat("Log likelihood:", x$Log_Likelihood, "\n")
+  cat("Pseudo R squared:", x$R_Squared, "\n")
   
-  if ( class(x)=="mcmc_hsar" ){
-    cat("\n Total impact: \n",x$impact_total, "\n")
-    cat("Indirect impact: \n",x$impact_idirect, "\n")
-    cat("Direct impact: \n",x$impact_direct, "\n")
-  }
+  cat("\n Impacts:\n")
+  df <- as.data.frame( cbind( t(x$impact_direct), t(x$impact_indirect), t(x$impact_total) ) )
+  names(df)<-c("direct","indirect","total")
+  row.names(df)<- x$labels
+  
+  print( df )
+  
   invisible(x)
 }
 
@@ -39,23 +33,30 @@ summary.mcmc_sar <- function(object, ...)
 {
   x<-object
   cat("\nCall:\n")
-  cat("sar( X, y, W ) \n")
+  print(x$call)
+  cat("Type:", ' sar ', "\n")
   
   cat("\nCoefficients:\n")
-  print(x$Mbetas)
-  cat("\n")
+  print( put_labels_to_coefficients(x$Mbetas, x$labels) )
   
-  cat("\n Spatial coefficients\n")
-  cat("Strength of the spatial interaction rho",x$Mrho, "\n")
+  rho<-x$Mrho
+  names(rho)<-'rho'
+  cat("\n Spatial Coefficients:\n")
+  print( rho )
   
   cat("\n Diagnostics \n")
-  cat("\n Deviance information criterion (DIC):", x$DIC, "\n")
+  cat("Deviance information criterion (DIC):", x$DIC, "\n")
   cat("Effective number of parameters (pd):", x$pD, "\n")
-  cat("\n Log likelihood:", x$Log_Likelihood, "\n")
-  cat("\n Pseudo R squared:", x$R_Squared, "\n")
-  cat("\n Total impact: \n",x$impact_total, "\n")
-  cat("Indirect impact: \n",x$impact_idirect, "\n")
-  cat("Direct impact: \n",x$impact_direct, "\n")
+  cat("Log likelihood:", x$Log_Likelihood, "\n")
+  cat("Pseudo R squared:", x$R_Squared, "\n")
+  
+  cat("\n Impacts:\n")
+  df <- as.data.frame( cbind( t(x$impact_direct), t(x$impact_indirect), t(x$impact_total) ) )
+  names(df)<-c("direct","indirect","total")
+  row.names(df)<- x$labels
+  
+  print( df )
+  
   invisible(x)
 }
 
@@ -63,20 +64,22 @@ summary.mcmc_hsar_rho_0 <- function(object, ...)
 {
   x <- object 
   cat("\nCall:\n")
-  cat("hsar( X, y, M, Z, Unum ) \n")
+  print(x$call)
+  cat("Type:", ' hsar with rho = 0 ', "\n")
   
   cat("\nCoefficients:\n")
-  print(x$Mbetas)
-  cat("\n")
+  print( put_labels_to_coefficients(x$Mbetas, x$labels) )
   
-  cat("\n Spatial coefficients\n")
-  cat("Strength of the spatial interaction at higher level lambda",x$Mlambda, "\n")
+  lambda<-x$Mlambda
+  names(lambda)<-'lambda'
+  cat("\n Spatial Coefficients:\n")
+  print( lambda )
   
   cat("\n Diagnostics \n")
-  cat("\n Deviance information criterion (DIC):", x$DIC, "\n")
+  cat("Deviance information criterion (DIC):", x$DIC, "\n")
   cat("Effective number of parameters (pd):", x$pD, "\n")
-  cat("\n Log likelihood:", x$Log_Likelihood, "\n")
-  cat("\n Pseudo R squared:", x$R_Squared, "\n")
+  cat("Log likelihood:", x$Log_Likelihood, "\n")
+  cat("Pseudo R squared:", x$R_Squared, "\n")
   invisible(x)
 }
 
@@ -84,20 +87,22 @@ summary.mcmc_hsar_lambda_0 <- function(object, ...)
 {
   x <- object
   cat("\nCall:\n")
-  cat("hsar( X, y, W, Z, Unum ) \n")
+  print(x$call)
+  cat("Type:", ' hsar with lambda = 0 ', "\n")
   
   cat("\nCoefficients:\n")
-  print(x$Mbetas)
-  cat("\n")
+  print( put_labels_to_coefficients(x$Mbetas, x$labels) )
   
-  cat("\n Spatial coefficients\n")
-  cat("Strength of the spatial interaction rho",x$Mrho, "\n")
+  rho<-x$Mrho
+  names(rho)<-'rho'
+  cat("\n Spatial Coefficients:\n")
+  print( rho )
   
   cat("\n Diagnostics \n")
-  cat("\n Deviance information criterion (DIC):", x$DIC, "\n")
+  cat("Deviance information criterion (DIC):", x$DIC, "\n")
   cat("Effective number of parameters (pd):", x$pD, "\n")
-  cat("\n Log likelihood:", x$Log_Likelihood, "\n")
-  cat("\n Pseudo R squared:", x$R_Squared, "\n")
+  cat("Log likelihood:", x$Log_Likelihood, "\n")
+  cat("Pseudo R squared:", x$R_Squared, "\n")
   invisible(x)
 }
 
