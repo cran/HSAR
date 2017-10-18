@@ -46,23 +46,26 @@ hsar <- function(formula, data = NULL, W=NULL, M=NULL, Delta, burnin=5000, Nsim=
     # Special case where rho =0 ; dependent regional effect 
     if (is.null(W)){
       detval <- lndet_imrw(M)
-      result <- .Call('HSAR_hsar_cpp_arma_rho_0', PACKAGE = 'HSAR', X, y, M, Delta, detval, Unum, 
-                      burnin, Nsim, thinning, lambda, sigma2e, sigma2u, betas)
+      result <- hsar_cpp_arma_rho_0(X, y, M, Delta, detval, Unum, burnin, Nsim, thinning, lambda, sigma2e, sigma2u, betas)
+        #.Call("HSAR_hsar_cpp_arma_rho_0", PACKAGE = 'HSAR', X, y, M, Delta, detval, Unum, 
+         #             burnin, Nsim, thinning, lambda, sigma2e, sigma2u, betas)
       class(result) <- "mcmc_hsar_rho_0"
     }
     # Special case where lamda =0 ; independent regional effect
     if ( is.null(M)){
       detval <- lndet_imrw(W)
-      result <- .Call('HSAR_hsar_cpp_arma_lambda_0', PACKAGE = 'HSAR', X, y, W, Delta, detval, Unum, 
-                      burnin, Nsim, thinning, rho, sigma2e, sigma2u, betas)
+      result <- hsar_cpp_arma_lambda_0(X, y, W, Delta, detval, Unum, burnin, Nsim, thinning, rho, sigma2e, sigma2u, betas) 
+        #.Call("HSAR_hsar_cpp_arma_lambda_0", PACKAGE = 'HSAR', X, y, W, Delta, detval, Unum, 
+         #             burnin, Nsim, thinning, rho, sigma2e, sigma2u, betas)
       class(result) <- "mcmc_hsar_lambda_0"
     }
     # Full HSAR model
     if ( (!is.null(M)) & (!is.null(W))){
       detval <- lndet_imrw(W)
       detvalM <- lndet_imrw(M)
-      result <- .Call('HSAR_hsar_cpp_arma', PACKAGE = 'HSAR', X, y, W, M, Delta, detval, detvalM, Unum, 
-                      burnin, Nsim, thinning, rho, lambda, sigma2e, sigma2u, betas)
+      result <- hsar_cpp_arma(X, y, W, M, Delta, detval, detvalM, Unum, burnin, Nsim, thinning, rho, lambda, sigma2e, sigma2u, betas) 
+        #.Call("HSAR_hsar_cpp_arma", PACKAGE = 'HSAR', X, y, W, M, Delta, detval, detvalM, Unum, 
+         #             burnin, Nsim, thinning, rho, lambda, sigma2e, sigma2u, betas)
       class(result) <- "mcmc_hsar"
     }
     

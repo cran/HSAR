@@ -34,8 +34,9 @@ sar <- function(formula, data= NULL, W, burnin=5000, Nsim=10000, thinning=1,
       betas <- coef(lm(formula,data))
     }
     
-    result<- .Call('HSAR_sar_cpp_arma', PACKAGE = 'HSAR', X, y, W, detval, 
-                   burnin, Nsim, thinning, rho, sigma2e, betas )
+    result<- sar_cpp_arma(X, y, W, detval, burnin, Nsim, thinning, rho, sigma2e, betas ) 
+      #.Call("HSAR_sar_cpp_arma", PACKAGE = 'HSAR', X, y, W, detval, 
+       #            burnin, Nsim, thinning, rho, sigma2e, betas )
     
     class(result) <- "mcmc_sar"
     

@@ -1,5 +1,11 @@
 \name{NEWS} 
 \title{News for Package 'hsar'}
+\section{Changes in version 0.4.2 (2017-10-16)}{
+ \itemize{
+  \item Acknowledgement of our financial support (in the description file).
+  \item Minor but important compatibility changes. 
+ }
+}
 
 \section{Changes in version 0.4.0 (2016-04-20)}{
   \itemize{

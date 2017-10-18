@@ -10,7 +10,7 @@ void diagnostic_impacts( const mat& betas, double rho, const sp_mat& W,
   
   sp_mat SW = I_sp+rho*W+pow(rho,2)*(W*W)+pow(rho,3)*(W*W*W)+pow(rho,4)*(W*W*W*W)+pow(rho,5)*(W*W*W*W*W);
   
-  vec d = SW.diag();
+  vec d( SW.diag() );
   
   direct  = sum( d )/n * betas ;
   total  = accu( SW )/n * betas ;

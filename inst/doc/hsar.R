@@ -13,7 +13,7 @@ population <- as.numeric(scale(rpois(100,10)))
 ## ------------------------------------------------------------------------
 grid_data <- SpatialGridDataFrame(grid_sp,data.frame(population))
 
-## ------------------------------------------------------------------------
+## ----echo=-1-------------------------------------------------------------
 par(mar=c(0,0,0,0))
 plot(grid_data)
 text(coordinates(grid_data),row.names(grid_data),col="red",cex=0.7)
