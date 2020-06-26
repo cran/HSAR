@@ -40,15 +40,15 @@ grid_data <- SpatialGridDataFrame(grid_sp,data.frame(population))
 
 Now check the names of each grid cell and plot the four cells from the left-top corner. Also, let's create lower-level units, says 2000 individuals
 
-```{r,echo=-1}
+```{r}
 par(mar=c(0,0,0,0))
 plot(grid_data)
 text(coordinates(grid_data),row.names(grid_data),col="red",cex=0.7)
-plot(grid_data[1:2,1:2,"population"],add=TRUE,col="blue",lwd=3)
+#plot(grid_data[1:2,1:2,"population"],add=TRUE,col="blue",lwd=3)
 
 individual_points <- spsample(grid_data,2000,"random")
 row.names(individual_points) <- as.character(1:2000)
-points(individual_points,pch=16,cex=0.7)
+points(individual_points, pch=16,cex=0.7)
 ```
 
 and create some attributes for individuals
@@ -175,7 +175,7 @@ sigma2u <- 0.4
 betas <- c(3,2,3,4,5)
 ```
 
-In order to run th emodels we simulate neighbourhood-level random effect
+In order to run the models we simulate neighbourhood-level random effect
 
 ```{r}
 thetas <- as.numeric(solve(diag(Utotal) - lambda*M) %*% rnorm(Utotal,mean=0,sd=sqrt(sigma2u)))

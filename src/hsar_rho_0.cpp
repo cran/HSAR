@@ -206,7 +206,8 @@ List hsar_cpp_arma_rho_0( arma::mat X, arma::vec y, arma::sp_mat M,
   
   double r2 = diagnostic_Rsquared(y, y_hat_hsar_rho_0(X, mean( Betas ), Z ,mean( Us ) ));
             
-  return List ::create( Named("Mbetas")= mean( Betas ), 
+  return List ::create( Named("cbetas")= Betas,
+                            Named("Mbetas")= mean( Betas ), 
                              Named("SDbetas") = stddev( Betas ),
                              Named("Mlambda")= mean( lambda ), 
                              Named("SDlambda") = stddev( lambda ),

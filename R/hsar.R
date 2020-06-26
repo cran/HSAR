@@ -69,6 +69,10 @@ hsar <- function(formula, data = NULL, W=NULL, M=NULL, Delta, burnin=5000, Nsim=
       class(result) <- "mcmc_hsar"
     }
     
+    result$cbetas<-put_labels_to_coefficients(result$cbetas, colnames(X))
+    result$Mbetas<-put_labels_to_coefficients(result$Mbetas, colnames(X))
+    result$SDbetas<-put_labels_to_coefficients(result$SDbetas, colnames(X))
+    
     result$labels <- colnames(X)
     result$call <- match.call()
     result$formula <- formula

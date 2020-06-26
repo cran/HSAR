@@ -12,7 +12,7 @@ check_formula<-function(formula, data){
 get_X_from_frame<-function(frame){
   
   X <- try(suppressWarnings(model.matrix(object=attr(frame, "terms"), data=frame)), silent=TRUE)
-  if(class(X)=="try-error") stop("The covariate matrix contains inappropriate values.", call.=FALSE)
+  if(class(X)[1]=="try-error") stop("The covariate matrix contains inappropriate values.", call.=FALSE)
   
   return(X)
 }

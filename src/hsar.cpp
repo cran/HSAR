@@ -262,7 +262,8 @@ List hsar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::sp_mat M,
   diagnostic_impacts( mean( Betas ), mean( rho ),W ,
             direct, indirect, total);
             
-  return List ::create( Named("Mbetas")= mean( Betas ), 
+  return List ::create( Named("cbetas")= Betas,
+                             Named("Mbetas")= mean( Betas ), 
                              Named("SDbetas") = stddev( Betas ),
                              Named("Mrho")= mean( rho ), 
                              Named("SDrho") = stddev( rho ),

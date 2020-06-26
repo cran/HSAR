@@ -3,7 +3,7 @@
 \docType{data}
 \title{Leased residential land parcels, from 2003 to 2009 in Beijing, China}
 \description{
-  The residential land parcel data leased to real eatate developers from the government during 2003 to 2009. The data contains price information and a range of locational and neighbourhood characteristics for each land parcel. There are 1117 samples in the data after dropping those without price information.     
+  The residential land parcel data leased to real estate developers from the government during 2003 to 2009. The data contains price information and a range of locational and neighbourhood characteristics for each land parcel. There are 1117 samples in the data after dropping those without price information.     
 
 }
 \usage{data(landprice)}

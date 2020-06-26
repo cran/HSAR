@@ -28,8 +28,8 @@ palette <- brewer.pal(4, "Blues")
 plot(Beijingdistricts,col=palette[groups],border="grey")
 
 # extract the district level spatial weights matrix
-nb.list <- poly2nb(Beijingdistricts,queen=FALSE)
-mat.list <- nb2mat(nb.list,style="W")
+nb.list <- spdep::poly2nb(Beijingdistricts,queen=FALSE)
+mat.list <- spdep::nb2mat(nb.list,style="W")
 M <- as(mat.list,"dgCMatrix")
 }
 \keyword{hierarchical spatial data}

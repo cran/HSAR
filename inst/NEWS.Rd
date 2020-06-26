@@ -1,5 +1,18 @@
 \name{NEWS} 
 \title{News for Package 'hsar'}
+
+\section{Changes in version 0.5 (2020-6-1)}{
+ \itemize{
+ \item The draws for the coefficients are returned.
+ \item The summary has been improved. The SD and the quantiles are printed.
+  \item spatialreg is used instead of depreciated functions of spdep.
+  \item Correct a bug, making the hsar(lambda=0) routine to crash.
+  \item A new vignette with real estate dataset from Athens.
+  \item A new dataset with real estate properties in municipality of Athens for 2017.
+  \item Minor bugs noticed.
+ }
+}
+
 \section{Changes in version 0.4.2 (2017-10-16)}{
  \itemize{
   \item Acknowledgement of our financial support (in the description file).

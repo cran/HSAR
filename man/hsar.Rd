@@ -53,6 +53,7 @@ Two simpler versions of the HSAR model can also be fitted using the hsar() funct
 
 \value{
 A list object containing:
+\item{cbetas}{A matrix with the MCMC samples of the draws for the coefficients.}
   \item{Mbetas}{A vector of estimated mean values of regression coefficients. }
   \item{SDbetas}{The standard deviations of estimated regression coefficients.}
   \item{Mrho}{The estimated mean of the lower-level spatial autoregressive parameter \eqn{\rho}.}
@@ -119,16 +120,16 @@ rm(i)
 Delta <- as(Delta,"dgCMatrix")
 
 # extract the district level spatial weights matrix using the queen's rule
-nb.list <- poly2nb(Beijingdistricts)
-mat.list <- nb2mat(nb.list,style="W")
+nb.list <- spdep::poly2nb(Beijingdistricts)
+mat.list <- spdep::nb2mat(nb.list,style="W")
 M <- as(mat.list,"dgCMatrix")
 
 # extract the land parcel level spatial weights matrix
-nb.25 <- dnearneigh(landSPDF,0,2500)
+nb.25 <- spdep::dnearneigh(landSPDF,0,2500)
 # to a weights matrix
-dist.25 <- nbdists(nb.25,landSPDF)
+dist.25 <- spdep::nbdists(nb.25,landSPDF)
 dist.25 <- lapply(dist.25,function(x) exp(-0.5 * (x / 2500)^2))
-mat.25 <- nb2mat(nb.25,glist=dist.25,style="W")
+mat.25 <- spdep::nb2mat(nb.25,glist=dist.25,style="W")
 W <- as(mat.25,"dgCMatrix")
 
 
@@ -141,7 +142,7 @@ pars=list( rho = 0.5,lambda = 0.5, sigma2e = 2.0, sigma2u = 2.0, betas = betas )
 
 \dontrun{
 res <- hsar(res.formula,data=model.data,W=W,M=M,Delta=Delta,
-burnin=5000, Nsim=10000, thinning = 1, parameters.start=pars)
+burnin=500, Nsim=1000, thinning = 1, parameters.start=pars)
 summary(res)
 
 # visualise the district level random effect

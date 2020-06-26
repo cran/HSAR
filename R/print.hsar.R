@@ -6,7 +6,7 @@ print.mcmc_hsar <- function(x, ...)
   cat("Type:", ' hsar ', "\n")
   
   cat("\n Coefficients:\n")
-  print( put_labels_to_coefficients(x$Mbetas, x$labels) )
+  print( x$Mbetas )
   
   cat("\n Spatial Coefficients:\n")
   print( cbind( rho= x$Mrho, lambda=x$Mlambda) )
@@ -22,7 +22,7 @@ print.mcmc_sar <- function(x, ...)
   cat("Type:", ' sar ', "\n")
   
   cat("\n Coefficients:\n")
-  print( put_labels_to_coefficients(x$Mbetas, x$labels) )
+  print( x$Mbetas )
   
   rho<-x$Mrho
   names(rho)<-'rho'
@@ -40,7 +40,7 @@ print.mcmc_hsar_rho_0 <- function(x, ...)
   cat("Type:", ' hsar with rho = 0 ', "\n")
   
   cat("\n Coefficients:\n")
-  print( put_labels_to_coefficients(x$Mbetas, x$labels) )
+  print( x$Mbetas )
   
   lambda<-x$Mlambda
   names(lambda)<-'lambda'
@@ -58,7 +58,7 @@ print.mcmc_hsar_lambda_0 <- function(x, ...)
   cat("Type:", ' hsar with lambda = 0 ', "\n")
   
   cat("\n Coefficients:\n")
-  print( put_labels_to_coefficients(x$Mbetas, x$labels) )
+  print( x$Mbetas )
   
   rho<-x$Mrho
   names(rho)<-'rho'

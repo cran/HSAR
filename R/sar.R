@@ -40,6 +40,10 @@ sar <- function(formula, data= NULL, W, burnin=5000, Nsim=10000, thinning=1,
     
     class(result) <- "mcmc_sar"
     
+    result$cbetas<-put_labels_to_coefficients(result$cbetas, colnames(X))
+    result$Mbetas<-put_labels_to_coefficients(result$Mbetas, colnames(X))
+    result$SDbetas<-put_labels_to_coefficients(result$SDbetas, colnames(X))
+    
     result$labels <- colnames(X)
     result$call <-match.call()
     result$formula <- formula

@@ -11,8 +11,8 @@ Implements a Hierarchical Spatial Simultaneous Autoregressive Model (HSAR) or a 
 \tabular{ll}{
 Package: \tab HSAR\cr
 Type: \tab Package\cr
-Version: \tab 0.4.2\cr
-Date: \tab 2017-10-16\cr
+Version: \tab 0.5\cr
+Date: \tab 2020-6-1\cr
 License: \tab GPL (>= 2)
 }
 

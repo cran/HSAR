@@ -96,7 +96,7 @@ double SAR_draw_rho(const mat& detval,const mat& e0e0,const mat& eded,const mat&
 // [[Rcpp::export]]
 
 List sar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::mat detval, 
-                   int burnin, int Nsim, int thinning, 
+                   int burnin, int Nsim, int thinning,
                    float rho_start, float sigma2e_start, arma::vec betas_start){
   
   //Starting the MCMC SET UP
@@ -217,7 +217,8 @@ List sar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::mat detval,
   mat direct, indirect, total;
   diagnostic_impacts( mean( Betas ), mean( rho ),W , direct, indirect, total);
 
-  return List ::create( Named("Mbetas")= mean( Betas ), 
+  return List ::create( Named("cbetas")= Betas, 
+                             Named("Mbetas")= mean( Betas ),
                              Named("SDbetas") = stddev( Betas ),
                              Named("Mrho")= mean( rho ), 
                              Named("SDrho") = stddev( rho ),

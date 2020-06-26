@@ -2,8 +2,7 @@ useDynLib(HSAR , .registration = TRUE)
 
 import (stats)
 importFrom("spdep", "mat2listw")
-importFrom("spdep", "do_ldet")
-importFrom("spdep", "mcdet_setup")
+importFrom("spatialreg", "do_ldet", "mcdet_setup")
 importFrom("Rcpp", "evalCpp")
 
 export(hsar)

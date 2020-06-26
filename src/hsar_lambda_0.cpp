@@ -54,9 +54,9 @@ double HSAR_loglikelihood_lambda_0(const mat& X, const mat& y, double rho,
       
     Zu.insert_rows( Zu.n_rows, temp_add);
   }
-  
+ 
   mat crosprod_AymXbmZu= trans(Ay-Xb-Zu)*(Ay-Xb-Zu);
-  
+    
   double log_lik_sar = (-n/2)*(log(2*datum::pi)+log( pow(sigma2e,2))) 
   + logdetA - crosprod_AymXbmZu(0,0)/(2*pow(sigma2e,2));
   
@@ -223,10 +223,11 @@ List hsar_cpp_arma_lambda_0( arma::mat X, arma::vec y, arma::sp_mat W,
   
   for(int i=0;i<(Nsim-burnin);i++)
   {
-  log_lik_samples[i-burnin] = HSAR_loglikelihood_lambda_0( X, y, rho[i], Betas.row(i), 
+  log_lik_samples[i] = HSAR_loglikelihood_lambda_0( X, y, rho[i], Betas.row(i), 
                                     Us.row(i),Unum,Utotal,
                                     sigma2e[i], detval, W );
   }
+  
   double log_lik_mean_theta = HSAR_loglikelihood_lambda_0( X, y, mean( rho ),
                               mean( Betas ), 
                               mean( Us ), Unum,Utotal,
@@ -240,8 +241,9 @@ List hsar_cpp_arma_lambda_0( arma::mat X, arma::vec y, arma::sp_mat W,
   
   mat direct, indirect, total;
   diagnostic_impacts( mean( Betas ), mean( rho ),W , direct, indirect, total);
-            
-  return List ::create( Named("Mbetas")= mean( Betas ), 
+          
+  return List ::create( Named("cbetas")= Betas,
+                             Named("Mbetas")= mean( Betas ), 
                              Named("SDbetas") = stddev( Betas ),
                              Named("Mrho")= mean( rho ), 
                              Named("SDrho") = stddev( rho ),

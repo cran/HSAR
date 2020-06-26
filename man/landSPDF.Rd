@@ -33,11 +33,11 @@ palette <- brewer.pal(4, "Blues")
 plot(landSPDF,pch=19,col=palette[groups],cex=0.8)
 
 # extract a spatial weights matrix based on the distances between pairs of land parcels
-nb.25 <- dnearneigh(landSPDF,0,2500)
+nb.25 <- spdep::dnearneigh(landSPDF,0,2500)
 # to a weights matrix
-dist.25 <- nbdists(nb.25,landSPDF)
+dist.25 <- spdep::nbdists(nb.25,landSPDF)
 dist.25 <- lapply(dist.25,function(x) exp(-0.5 * (x / 2500)^2))
-mat.25 <- nb2mat(nb.25,glist=dist.25,style="W")
+mat.25 <- spdep::nb2mat(nb.25,glist=dist.25,style="W")
 W <- as(mat.25,"dgCMatrix")
 }
 \keyword{hierarchical spatial data}

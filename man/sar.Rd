@@ -25,6 +25,7 @@ thinning=1, parameters.start = NULL )
 
 \value{
 A list object containing: 
+  \item{cbetas}{A matrix with the MCMC samples of the draws for the coefficients.}
   \item{Mbetas}{A vector of estimated mean values of regression coefficients.}
   \item{SDbetas}{The standard deviations of estimated regression coefficients.}
   \item{Mrho}{The estimated mean of the lower-level spatial autoregressive parameter \eqn{\rho}.}
@@ -58,11 +59,12 @@ data(landSPDF)
 
 # extract the land parcel level spatial weights matrix
 library(spdep)
-nb.25 <- dnearneigh(landSPDF,0,2500)
+
+nb.25 <- spdep::dnearneigh(landSPDF,0,2500)
 # to a weights matrix
-dist.25 <- nbdists(nb.25,landSPDF)
+dist.25 <- spdep::nbdists(nb.25,landSPDF)
 dist.25 <- lapply(dist.25,function(x) exp(-0.5 * (x / 2500)^2))
-mat.25 <- nb2mat(nb.25,glist=dist.25,style="W")
+mat.25 <- spdep::nb2mat(nb.25,glist=dist.25,style="W")
 W <- as(mat.25,"dgCMatrix")
 
 ## run the sar() function
@@ -75,7 +77,7 @@ pars=list( rho = 0.5, sigma2e = 2.0, betas = betas )
 
 \dontrun{
 res <- sar(res.formula,data=landprice,W=W,
-burnin=5000, Nsim=10000, thinning=1, parameters.start=pars)
+burnin=500, Nsim=1000, thinning=1, parameters.start=pars)
 summary(res)
 }
 

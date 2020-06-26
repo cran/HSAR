@@ -8,7 +8,9 @@ summary.mcmc_hsar <- function(object, ...)
   cat("Type:", ' hsar ', "\n")
   
   cat("\nCoefficients:\n")
-  print( put_labels_to_coefficients(x$Mbetas, x$labels) )
+  dfb <- as.data.frame( t(rbind(x$Mbetas,x$SDbetas)) )
+  names(dfb)<-c("Mean","SD")
+  print( dfb )
   
   cat("\n Spatial Coefficients:\n")
   print( cbind( rho= x$Mrho, lambda=x$Mlambda) )
@@ -26,6 +28,10 @@ summary.mcmc_hsar <- function(object, ...)
   
   print( df )
   
+  cat("\n Quantiles:\n")
+  v <- c(0.05, 0.25, 0.5, 0.75, 0.95)
+  print( t(sapply( x$cbetas, function(i) quantile(i, v))) )  
+  
   invisible(x)
 }
 
@@ -37,7 +43,9 @@ summary.mcmc_sar <- function(object, ...)
   cat("Type:", ' sar ', "\n")
   
   cat("\nCoefficients:\n")
-  print( put_labels_to_coefficients(x$Mbetas, x$labels) )
+  dfb <- as.data.frame( t(rbind(x$Mbetas,x$SDbetas)) )
+  names(dfb)<-c("Mean","SD")
+  print( dfb )
   
   rho<-x$Mrho
   names(rho)<-'rho'
@@ -57,6 +65,10 @@ summary.mcmc_sar <- function(object, ...)
   
   print( df )
   
+  cat("\n Quantiles:\n")
+  v <- c(0.05, 0.25, 0.5, 0.75, 0.95)
+  print( t(sapply( x$cbetas, function(i) quantile(i, v))) )  
+  
   invisible(x)
 }
 
@@ -68,7 +80,9 @@ summary.mcmc_hsar_rho_0 <- function(object, ...)
   cat("Type:", ' hsar with rho = 0 ', "\n")
   
   cat("\nCoefficients:\n")
-  print( put_labels_to_coefficients(x$Mbetas, x$labels) )
+  dfb <- as.data.frame( t(rbind(x$Mbetas,x$SDbetas)) )
+  names(dfb)<-c("Mean","SD")
+  print( dfb )
   
   lambda<-x$Mlambda
   names(lambda)<-'lambda'
@@ -80,6 +94,11 @@ summary.mcmc_hsar_rho_0 <- function(object, ...)
   cat("Effective number of parameters (pd):", x$pD, "\n")
   cat("Log likelihood:", x$Log_Likelihood, "\n")
   cat("Pseudo R squared:", x$R_Squared, "\n")
+  
+  cat("\n Quantiles:\n")
+  v <- c(0.05, 0.25, 0.5, 0.75, 0.95)
+  print( t(sapply( x$cbetas, function(i) quantile(i, v))) )  
+  
   invisible(x)
 }
 
@@ -91,7 +110,9 @@ summary.mcmc_hsar_lambda_0 <- function(object, ...)
   cat("Type:", ' hsar with lambda = 0 ', "\n")
   
   cat("\nCoefficients:\n")
-  print( put_labels_to_coefficients(x$Mbetas, x$labels) )
+  dfb <- as.data.frame( t(rbind(x$Mbetas,x$SDbetas)) )
+  names(dfb)<-c("Mean","SD")
+  print( dfb )
   
   rho<-x$Mrho
   names(rho)<-'rho'
@@ -103,6 +124,11 @@ summary.mcmc_hsar_lambda_0 <- function(object, ...)
   cat("Effective number of parameters (pd):", x$pD, "\n")
   cat("Log likelihood:", x$Log_Likelihood, "\n")
   cat("Pseudo R squared:", x$R_Squared, "\n")
+  
+  cat("\n Quantiles:\n")
+  v <- c(0.05, 0.25, 0.5, 0.75, 0.95)
+  print( t(sapply( x$cbetas, function(i) quantile(i, v))) )  
+  
   invisible(x)
 }
 
