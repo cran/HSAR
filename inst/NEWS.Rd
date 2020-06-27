@@ -1,6 +1,12 @@
 \name{NEWS} 
 \title{News for Package 'hsar'}
 
+\section{Changes in version 0.5.1 (2020-6-27)}{
+ \itemize{
+ \item Small changes to get rid of Warnings.
+ }
+}
+
 \section{Changes in version 0.5 (2020-6-1)}{
  \itemize{
  \item The draws for the coefficients are returned.

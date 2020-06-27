@@ -207,7 +207,7 @@ List sar_cpp_arma( arma::mat X, arma::vec y, arma::sp_mat W, arma::mat detval,
   double log_lik_mean_theta = SAR_loglikelihood( X, y, mean( rho ),
                               mean( Betas ), 
                              mean( sigma2e ), detval, 
-                             W = W);
+                             W );
 
   double dic, pd;
   diagnostic_dic_pd(log_lik_samples,log_lik_mean_theta, dic, pd);

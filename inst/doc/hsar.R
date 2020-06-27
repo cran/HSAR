@@ -1,4 +1,5 @@
 ## ----message=FALSE, warning=FALSE---------------------------------------------
+library(sp)
 library(maptools)
 library(rgdal)
 library(rgeos)

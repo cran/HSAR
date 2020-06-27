@@ -1,7 +1,7 @@
 Package: HSAR
 Type: Package
 Title: Hierarchical Spatial Autoregressive Model
-Version: 0.5
+Version: 0.5.1
 Date: 2020-6-1
 Author: Guanpeng Dong, Richard Harris, Angelos Mimis
 Maintainer: Angelos Mimis <mimis@panteion.gr>
@@ -10,11 +10,11 @@ License: GPL (>= 2)
 Depends: R (>= 3.5.0)
 Imports: spdep, spatialreg, Rcpp
 LinkingTo: Rcpp, RcppArmadillo
-Suggests: sf, tidyverse, maptools ,rgdal, rgeos, RColorBrewer,
+Suggests: sf, tidyverse, sp, maptools ,rgdal, rgeos, RColorBrewer,
         classInt, markdown, knitr
 VignetteBuilder: knitr
 NeedsCompilation: yes
 Repository: CRAN
 RoxygenNote: 7.1.0
-Packaged: 2020-06-26 15:54:45 UTC; angelos
-Date/Publication: 2020-06-26 17:20:16 UTC
+Packaged: 2020-06-27 18:49:09 UTC; angelos
+Date/Publication: 2020-06-27 23:50:02 UTC

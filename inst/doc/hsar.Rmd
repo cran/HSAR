@@ -12,6 +12,7 @@ A detailed synthetic example will illustrate the use of the hsar() function, inc
 In order to run the example, sp, maptools, rdgal and rgeos libraries will be loaded.
 
 ```{r,message=FALSE, warning=FALSE}
+library(sp)
 library(maptools)
 library(rgdal)
 library(rgeos)
