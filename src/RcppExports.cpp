@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // hsar_cpp_arma
 List hsar_cpp_arma(arma::mat X, arma::vec y, arma::sp_mat W, arma::sp_mat M, arma::sp_mat Z, arma::mat detval, arma::mat detvalM, arma::vec Unum, int burnin, int Nsim, int thinning, float rho_start, float lambda_start, float sigma2e_start, float sigma2u_start, arma::vec betas_start);
 RcppExport SEXP _HSAR_hsar_cpp_arma(SEXP XSEXP, SEXP ySEXP, SEXP WSEXP, SEXP MSEXP, SEXP ZSEXP, SEXP detvalSEXP, SEXP detvalMSEXP, SEXP UnumSEXP, SEXP burninSEXP, SEXP NsimSEXP, SEXP thinningSEXP, SEXP rho_startSEXP, SEXP lambda_startSEXP, SEXP sigma2e_startSEXP, SEXP sigma2u_startSEXP, SEXP betas_startSEXP) {

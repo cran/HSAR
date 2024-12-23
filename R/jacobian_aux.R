@@ -6,18 +6,18 @@ lndet_imrw <- function(W){
   rmax <- 0.99
   env <- new.env(parent=globalenv())
   lw <- spdep::mat2listw(W)
-  
+
   assign("n", nrow(W), envir=env)
   assign("listw", lw, envir=env)
   assign("similar", FALSE, envir=env)
   assign("family", "SAR", envir=env)
-  
+
   spatialreg::mcdet_setup(env)
   detval1 <- seq(rmin, rmax, 0.001)
   detval2 <- sapply(detval1, spatialreg::do_ldet, env)
   detval  <- cbind(detval1, detval2)
   rm(env)
-  
-  return( detval )
+
+  return(detval)
 }
 

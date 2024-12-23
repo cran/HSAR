@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Hierarchical Spatial Simultaneous Autoregressive Model (HSAR)</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Hierarchical Spatial Simultaneous
+Autoregressive Model (HSAR)</h1>
+
+
+
+<div id="an-application-of-hsar-for-asking-prices-in-the-municipality-of-athens" class="section level1">
+<h1>An application of HSAR for asking prices in the municipality of
+Athens</h1>
+<p>An application of <code>hsar()</code>, based on rel data, will be
+illustrated. The design of the weight matrices needed and the random
+effect design matrix will be explained.</p>
+<div id="libraries" class="section level3">
+<h3>Libraries</h3>
+<p>We start by loading the libraries that will be used.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(spdep)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="do">## ── Attaching core tidyverse packages ─────────────────────────────────────── tidyverse 2.0.0 ──</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="do">## ✔ dplyr     1.1.4     ✔ readr     2.1.5</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="do">## ✔ forcats   1.0.0     ✔ stringr   1.5.1</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="do">## ✔ ggplot2   3.5.1     ✔ tibble    3.2.1</span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="do">## ✔ lubridate 1.9.4     ✔ tidyr     1.3.1</span></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="do">## ✔ purrr     1.0.2     </span></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="do">## ── Conflicts ───────────────────────────────────────────────────────── tidyverse_conflicts() ──</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="do">## ✖ tidyr::expand() masks Matrix::expand()</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="do">## ✖ dplyr::filter() masks stats::filter()</span></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="do">## ✖ dplyr::lag()    masks stats::lag()</span></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="do">## ✖ tidyr::pack()   masks Matrix::pack()</span></span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="do">## ✖ tidyr::unpack() masks Matrix::unpack()</span></span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="do">## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="fu">library</span>(HSAR)</span></code></pre></div>
+</div>
+<div id="reading-the-datasets" class="section level3">
+<h3>Reading the datasets</h3>
+<p>At the higher level, we have the seven departments of the
+municipality of Athens and at the lower level we have the point data of
+the properties.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">data</span>(depmunic)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">data</span>(properties)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(depmunic),<span class="at">col =</span> <span class="fu">sf.colors</span>(<span class="dv">12</span>, <span class="at">categorical =</span> <span class="cn">TRUE</span>), <span class="at">border =</span> <span class="st">&#39;grey&#39;</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(properties),<span class="at">add=</span><span class="cn">TRUE</span>,<span class="at">col=</span><span class="st">&quot;red&quot;</span>,<span class="at">pch=</span><span class="dv">16</span>,<span class="at">cex=</span><span class="fl">0.6</span>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfgAAAH4CAMAAACR9g9NAAAAHlBMVEWAsdON08ez3mm+utq+vr77gHL9tGL/AAD//7P///+nc+ZOAAAACXBIWXMAAAsSAAALEgHS3X78AAAa+0lEQVR4nO3diZbjKAwF0FroIvn/H+54Z5FAYGyDpHfmTKeS1HotjDHGX2+NyHw9/QNononCC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CC43CBzHzf/yj8F7MnKd/ijui8F7M1yci6BXeywz/pfDSsriLKHqFd2J2eP72Cr/HY5/kn/6BLo3CbwnYl109X3yFXxO7L8091wZf4ZeA7nvhM4zCL0nA86RX+CVJeI7yCj8n7c6RXuGnZN350Sv8FAo8swN7hZ9Cg2c1mKfwb7I7qwZf4d9F8F9chnQUvsx9omexs1f4YvgvFg2+wtfAM6BX+Er4p3/os5ENP599sxLdBcNP5pOhtRXyCj9sjvZdpLtQeBNOsxLnLhO+nt0q/MCpr/alP8DBXR6808rb8t37LK/wA8Z4iOUdei7u0uCNj1h1CK/w4+VUX351f/p3aBRR8A3c2chLhy9u7Jm4i4KH3Iu7dwo/XMCG3iY/5OsuHj5wzzYACj9eKF07Me6C4LVL70XhZbrLgV/da8bqFH7gbO410204uguBd8/IqfscEfBN+nUKP1zUHYgA+EbuCj9aqibOc3cXAG/O9eSZukuAn3vyp+0VfrAse/jTVc/NXQr82Ypn584e3u/Sk/ihNyn8SDHhJTOkBh96Ez93zvDmKzqCz7hb7E0KP1CMp0kJ2iAwdOcLb3Ka4TZh8W1E4ccJ5fJ3b5tIbCAc3bnCk8bnbVjxiLvCjxPSxEraoA7T+5PwhKedkCMN5bJUfzOFp5+IJVQ9U3mO8CUn4KW6c4SP3amH8jIGa5ewgwcWNlrb8yy/kMHaJdzg8Ssj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" /></p>
+<p>The characteristics that come with the areal data are the id of the
+department, the number of airbnb properties, the number of museums, the
+population, the number of citizens with origin a non european union
+country, the area of the green space (m^2) and the area of the polygon
+(km^2).</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">names</span>(depmunic)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="do">## [1] &quot;num_dep&quot;    &quot;airbnb&quot;     &quot;museums&quot;    &quot;population&quot; &quot;pop_rest&quot;   &quot;greensp&quot;    &quot;area&quot;      </span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="do">## [8] &quot;geometry&quot;</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>depmunic<span class="sc">$</span>pop_rest</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="do">## [1]  8202  5009  2735  4167  5099 16531  8017</span></span></code></pre></div>
+<p>The characteristics of the properties are the size (m^2), the asking
+price (euros), the price per square meter, the age (years) and the
+shortest distance to metro/train station (m).</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">names</span>(properties)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="do">## [1] &quot;id&quot;         &quot;size&quot;       &quot;price&quot;      &quot;prpsqm&quot;     &quot;age&quot;        &quot;dist_metro&quot; &quot;geometry&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">hist</span>(properties<span class="sc">$</span>age, <span class="at">xlab =</span> <span class="st">&quot;Age&quot;</span>, <span class="at">main=</span><span class="st">&quot;Age of the properties&quot;</span>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /></p>
+<p>Now we are going to create two more variables at the higher,
+municipality department, level. The first one is the population density
+per 10k citizens, and the second one is the percentage of non EU
+citizens.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>depmunic<span class="sc">$</span>popdens <span class="ot">&lt;-</span> depmunic<span class="sc">$</span>population<span class="sc">/</span> (<span class="dv">10000</span><span class="sc">*</span>depmunic<span class="sc">$</span>area)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>depmunic<span class="sc">$</span>foreigners <span class="ot">&lt;-</span> <span class="dv">100</span> <span class="sc">*</span> depmunic<span class="sc">$</span>pop_rest<span class="sc">/</span> depmunic<span class="sc">$</span>population</span></code></pre></div>
+<p>The next step is to create the model data that are going to use in
+the hsar model. For that, we need for each property (lower data), the
+data from the relevant department(higher level).</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>properties_in_dd <span class="ot">&lt;-</span> <span class="fu">st_join</span>(properties, depmunic, <span class="at">join =</span> st_within)</span></code></pre></div>
+<p>So now, we know each property, in which department resides and the
+coresponding data for that polygon. We also need that data in sorting
+order.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>model.data <span class="ot">&lt;-</span> properties_in_dd[<span class="fu">order</span>(properties_in_dd<span class="sc">$</span>num_dep),]</span></code></pre></div>
+</div>
+<div id="create-matrices-used-in-the-hsar-function" class="section level3">
+<h3>Create matrices used in the hsar function</h3>
+<p>In order to run the model we need to create the effect design matrix
+(Delta), the weight matrix for the high-level - polygon data (M), and
+the weight matrix for the lower level - point data (W).</p>
+<p>In order to define the random effect matrix, we start with estimating
+the number of properties in each municipality department</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>properties_count <span class="ot">&lt;-</span> <span class="fu">count</span>(<span class="fu">as_tibble</span>(model.data), num_dep)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>MM <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(properties_count)</span></code></pre></div>
+<p>and by geting the total number of municipality departments (7), we
+define a vector with the number of municipality department that each
+property belongs</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>Utotal <span class="ot">&lt;-</span> <span class="fu">dim</span>(MM)[<span class="dv">1</span>]</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>Unum <span class="ot">&lt;-</span> MM[,<span class="dv">2</span>]</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>Uid <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span>Utotal),Unum)</span></code></pre></div>
+<p>We then define the random effect matrix (Delta) wich has a dimension
+of 1000x7</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(properties)</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>Delta <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="at">nrow=</span>n,<span class="at">ncol=</span>Utotal)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>Utotal) {</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  Delta[Uid<span class="sc">==</span>i,i] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>}</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>Delta <span class="ot">&lt;-</span> <span class="fu">as</span>(Delta,<span class="st">&quot;dgCMatrix&quot;</span>)</span></code></pre></div>
+<p>Now we estimate the spatial weight matrix at the higher level which
+in our case is the municipality departments (polygons). So we start with
+poly2nb which constructs the neighbours list for polygons and then with
+nb2mat we generate the weight matrix for the neighbours list previously
+created. Then we transform the weight matrix in a sparse matrix
+format.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>nb.list <span class="ot">&lt;-</span> <span class="fu">poly2nb</span>(depmunic)</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>mat.list <span class="ot">&lt;-</span> <span class="fu">nb2mat</span>(nb.list,<span class="at">style=</span><span class="st">&quot;W&quot;</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">as</span>(mat.list,<span class="st">&quot;dgCMatrix&quot;</span>)</span></code></pre></div>
+<p>to have a closer look at M , we can visualize it</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(depmunic),<span class="at">border =</span> <span class="st">&#39;grey&#39;</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_centroid</span>(depmunic), <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="do">## Warning: st_centroid assumes attributes are constant over geometries</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="do">## Warning in plot.sf(st_centroid(depmunic), add = TRUE): ignoring all but the first attribute</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="fu">plot</span>(nb.list, <span class="fu">st_centroid</span>(depmunic), <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="do">## Warning: st_centroid assumes attributes are constant over geometries</span></span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfgAAAH4CAMAAACR9g9NAAAAG1BMVEUAALMlAP+FAP++vr7lPMP/eoX/t0j/9Qr////CRm3iAAAACXBIWXMAAAsSAAALEgHS3X78AAAQEUlEQVR4nO3diZqjOAwE4J5hjrz/E+9Org4JNpYt2ZKq6tvZORps4A+XbcjXhYHM1+oFYNaE8KAhPGgIDxrCg4bwoCE8aAgPGsKDhvCgITxoCA8awoOG8KAhPGgIDxrCg4bwoCE8aAgPGsKDhvCgITxoCA8awoOG8KAhPGgIDxrCg4bwoCE8aAgPGsKDhvCgITxoCA8awoOG8KAhPGgIDxrCg4bwoCE8aAgPGsKDhvCgITxoCA8awoOG8KAhPGgIDxrCg4bwoCE8aAgPGsKDhvCgITxoCA8awoOG8KAhPGgIDxrCg4bwoCE8aAgPGsKDhvCgITxoCP+W7fpf/hB+l+2a1UsxI4Tf5WoOQU/4XW7ihEfLEzz/Tk/4l+y0k9sT/pl36NTuhH/m0/n/T0JefMLfc0ic+OaO8LdUeHPSE/6WKm5GesLfUqdNKE/4a05h09ET/l9aVJPRE/5f2kxTyRP+XxpJM93bEf4i2pXT0BP+IjuGZ2nSIbz43J2jIZfwPRdtCXZ6wvddrYenJ3wnvPpSTA42fPfYyvDuwPBDl+eED5shuvjuoPCD9+IJ3DHhRy/JCR8zo24Z3PHgFVpcCR8wCmgp3NHgNdwJHy/c35+BgldBSyJP+AVleAgSPHf4lwDB0/01hF9QiIcQfnoZPoIDzx1+F8LPLsNJYOC5w++DAk/3t2DA67SvZ3LHgFcSI3yw0P0gAPBaYIQPFu7wR8kPT/fDEH5uMW6SHp7uxyH8v/z+/VuhlFDJDt/mfv81WEyoZIbfWlvsTuHzuWeGb39lCeEzRYJ1co5P6J4XXhOL8HFC95MkhVd1J3ycKFrleK3dR3LCq7rnTEp4Vayk8hnh6d6QhPC6VIQPEuVr8Kzu6eC1oQgfI+pOhI8RwrcmF7w+E+EjxECJ8AFigUT4ACG8IIngTYwI7z50FyURfDEjhaotnrckgi//pJs/rzsEfMuP1eaJkjTwZ0iE3wcGvuf7JLsWJEgIrzdDqGSBP1ci/C6E15o+WAhfnD7nePpHCF+bJTE9HLwIM7E8EPy9AU9gmZcdCr55yvYyA4fw5RkIHyAW8L3LEiJ48JS/Jgl8g5EUPveRHgd+O/jTYJGhQ/j+IkMnB7zkSE/4awg/UGbkpIBvMSL8Phngm4he4Fv63ZL3zaWAF7o3zCJs0g+Z+PBtQq3wz5HYR5PcPg85DgbR4VsR3uCLI+0rzTz/Ztju/4+f4PADza/Hsxbg958Twi+O4Jh7tAMf7fav14Dl2RPIR4YXjaUp/qD8oN33+f5j7vineXj40xnPLgaCJjD8FPdygcHl48KLNry+UnT5sPCyzW6BRPgVEW51E6TQ8kHhXTwPRfj58bDDx5aPCe/DnfCTI249MYMffbfSwsSDl29pM5pbwTHto8H3bGS7Hf75h3j0seC7NrDVld12/Jcgx/9I8J3vqrNB+OjW2z2i5V8+EHzftpx2J3cHv//AvXwceFfuxf5984q1Ega+c0OuuoXnHq8Ub+6n43SNKlZLEPje7biszY7wKvHmTvg56R83pbkUsnJHq7b+5KSGX9o5M1a5+QCfAPDdF0rrDvS3qUbqN39swz+8u+N8c8kDC1B8ikst7uH71345/PCyW94Ueof36D7y4JZwPjt63/AD690+658/f6RlG0xZms2K3jP8nC8O+3P/1V6yZLn6OhTf6usp4yyO4YfWt11HCi8d7ydfjSlP6nmFHx/LYARvP/DraAZ9eZ/wCh/x9hJk53iFHbhncnV5j/AqRzZHQ+kr8xys6uHUCHu80gltxki75pkKRR29VmWSuz94wTr++vVLpRxJdMYBvQ7W2apT3qbuqrSewPC/7r9GyxFFZUBI5XbtaEhXX5UnIbwsCh1GBy9WqRRv1XTnDV5ypL8Egn9phRX9EKbJVrKis8/xY09KbLvfGn9o1+EQGX5OQWolVrtar5+oeQd6ws8ssDq44hAeqFtWa1W1r4WVGpVqbTmN9/RKIXxbcTqlVItpbcXTiTN4p0d6tY/jqoo/Q/jZhTmpmfCzC3NSNeHPi1roDtNyp7Ca5S+YGClvXYyqzwZ/7elUfhdJSvl08BpL8V7m4p3epHZn8DrtovrJd573Bu9Vfi09wAicOcd6jTHPU5N+zJ1KT0jLRILrv63QczY16tX7gte4m2ue5vPivzQocvnl3UVf3hW8Tg+YYJrXr54qfq+ocrtAb5SXwBO8yqqJ4J//UPte0dElUkpa+Inj6evDIeTlzYnukriBn9jzWfmIzRwDI47qsniBn9k7U5uk6XJvVTSXhvDvPzx5vmFlCD9WUB3+9fGG9Xdx+ygujhv4eef40/fQXh73eTpLpBm9RXIBf/jYaGdRw5Nsq7tkqlFbMg/w95WZ9Vj8Gbxj9ouevAP47eBPCoX1TaLO/vfvX90ClZZvPbzuRfR598vJT4eXYJ+/91+K0VlEX/AKvfGPdve3tFZB+FnZqn+Vl3bcz/KCP3WHJ3wx76sxdo6tzn380pnq0oxH/RyfBP5gLUZW7PRjc3YBMFD3rKSFH1mz4TNFgKSAL4x5US5v1uxzkhi+f90A4HPcx5fWonPthu8GvcvrtS+tha+MiOhawfFmANfR/Fx6he9DUIN3+QlQPR75he/Z+MNbRrO/SDXq3cRL4Rs6xjXLay5BrZNYL+rL4xlevLZKvXubUlmawYKXHnJV4Jva9KcnFXzLykj2PpWN4/T6Dg7+tgu2rbbyxnEljwf/fdbVKa49hDeKZF2azwqa8SSPCt8wbsZgkKQj+UTwwlWpTK44Oru90snBhS9Pf9vdxxZGWuf0qB/P4sCX+u5Nm1vcyKt/spfB67TEF77ESy0vxSZ77VUk+I/jXfuo6e48P1jb5XTEvlFsHuNbBd+7JtuzG+VtF7SC315qvSzAz/b98UPD6q7vKXovwXCX3z7/aVbM6ooHP/sLmz538YnwdlUtgrdYIaM7uqNLSpOaDms3K3kNfPDWlgy7fCb4aR4ZTvJL4O1vum0z8diSao8P38w2VNHntWK5OMM1ygQ/S37M/X3+8ht0Tc9dC+DtVsc//EvPwvfQvmN440uW+fCG6+Md/rtnYfeqjkLvU28tbZkOb7o+c+S7m5tlP8i1x9uujWd48TVcKnhrmSny5cNzZZ7aDIUfmq4M4XvqkF55nb9F9bDXL9FVvTnMBHnxlxOdf0q+vxxl95nKAz+Dxb4KWUWig8O2v31P04CTCd7u8Z6XnT5J79y0S685aaipsxXGeijhZS6855stm6r6m3oev2fopJklMlO+WteA2rb7zSLz4Ge1p87sLK+u1ciC3O8cCO+slobqBt/Je7EezzsNPuGBvlbb5A+gPLPg3d1ea1VX6FOduxQdmQTv6VJ7l6+v0S1Q6Gv1nnzworq+LuObwP4K3CJz4KdulNnwB89zBcgUeCcXXAdRgg/HPgfer7vGOV5cpY9MgHdza52pyuHYw893n+8QUH7GHj96f/Pz509BbUtOufHkZ93ODdzi/rz/aq2KB/uWBBhlK4Tvq2Q04eTnj6sXbyI5POXPs+IRKuk2Ep3jrzUIK1BJsHv5TI9JTyvfV7V9WfRiBLtttOR27lFzoCx7+ZHVZmp+u716xUtq7c7CV5oabCm71xk31L2m2t4s/aIC7W21ctsHc1/9vXOqm2uktFLTUmuZ0dxXf7fs67CV4U/B0LDWy9E7YwUXDLZv0dbPavhdBj8Fg/Avi/D4o6TU63CMOHfzruB3kfNrwL/ULSv18SEhvEpmwY8/F7E9TgtB5H3DCzdiz+nhdnRWeSDG/OkXzbiGl27EruuCK31tTmmpMeh9wxtP3zaHTamrkwreZoa+E4j3eIaXbz6bGXpuMN3Tu4a3n0OIKfF3Tp8L3v6qYBOIupb3DG+/y3dWsDXO7Hmndw1vfXXX/cHaWpvx/dL7hreVHziVtL/j0Ku8c3jTk/YofOs9gbyaCfENb3pD1wPy0W3bcpXvkt41vAKNbuGHczV0JTuUdwzft6NY32uV57uP5VCtzS5+4Tu31Tr42gSEb073pmqbsV/iXP7odNBdnVW8whvCjBXf1HCjWp9NnMLbDKb5nsYW/nMSwjdl+HWglsW3yb/f943VaBCP8KNb6eTeevy2Wn5QIfx5NJo7VIdS9ZawFf7sI87g1V4HavtNvWJ5wlej2bZpCi++dSB8LapbxxZeKk/4WiLBi+Q99tKkhS+XNhG+4zmwWfEEP2mX17p81ClmVVzBq27MUllqdcSW9wWveTYslGReQZA4gzffIWccU0LEHbza5pzQLx5Z3h+8zuF+zkiYwPIO4e1a0/VvrOLKu4RvE6rcIc8b+BZW3id86zAXEbyJEeG10zaoUbBrGxFFlXcLf7ZFt/JUU0c4E1499WE05amO93crIJ8t8edxDF+VL/V4Fi74zHSCsvuGr+xNn8Oaqg8xcXf/iGv4xsv2065PM3ejcmfEOXxZXrCz0f0g3uEVeleV2+e39z/EjHv44e5V9eZ5nXesr45/+ONdq3nrG+3v4RMA/uCOrf14qzuaKw17EPjKNxi0te+V8+PHj/alaJ4yQGLAVzL2tNSP+6/RiuIlPPzYCPp2+FzsKeBH7via4bO5Z4Zvsmo8x6dzTwFv3v+e7PR+TVb4OQ/eBk4KeNt3zqR0zwL/hsPD/GlywL+37VkVnChJ4I1eOJN1d7/kgX8x4mORLUkD/1TidV1T8sA/x96pF5kyieBvz9bwedi2ZIK/GHx9e1r5VPAWV+FZ5VPB87HI9mSCtyEivPdw+LwkeeD5eJwoaeANeVLKZ4E3xckonwTemCahfA54axjC+4y9Sz75DPB070gC+Annd8I7jLl7/EeijxIentfzfYkOrwTz8STu4y+Ed5o+mDfh78ftd//w///TukeH73R/eXlS9TV5Kc/ut8SG73a/PPTzyp4kNHyPmuA1KqkTGl4uj439mtjwYnm6PxIcnvK9iQ4vkgS+lvtIeHjBKy7J/hIceKrvEh++UZTu+ySAb7pH42H+LRngG3Znsr8HA57uH8kBX5PN8HJ5gySBL8vT/DhZ4BW+wgQraeCHv8IELHngzd9omyuJ4A/v1QlfSCZ443fa5kou+HdouheTDN7upbbZkg3e6KW2+ZIO/lWb8OUkhmdDbS354B/yZK8mIfwl90NvSskIn/uhN6WkhOf+fp6k8MxZCA8awoOG8KAhPGgIDxrCg4bwoCE8aAgPGsKDhvCgITxoCA8awoOG8KAhPGgIDxrCg4bwoCE8aAgPGsKDhvCgITxoCA8awoOG8KAhPGgIDxrCg4bwoCE8aAgPGsKDhvCgITxoCA8awoOG8KAhPGgIDxrCg4bwoCE8aAgPGsKDhvCgITxoCA8awoOG8KAhPGgIDxrCg4bwoCE8aAgPGsKDhvCgITxoCA8awoOG8KAhPGgIDxrCg4bwoCE8aAgPGsKDhvCgITxoCA8awoOG8KAhPGgIDxrCg4bwoCE8aAgPGsKDhvCgITxoCA8awoPmP9pQ1+NOlHoTAAAAAElFTkSuQmCC" /></p>
+<p>Similarly, we create the spatial weight matrix at the lower level of
+properties (point data). So we create the neighbour list at a distance
+of 1300 meters</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>nb<span class="fl">.1300</span> <span class="ot">&lt;-</span> <span class="fu">dnearneigh</span>(properties,<span class="dv">0</span>,<span class="dv">1300</span>)</span></code></pre></div>
+<p>and the weights matrix W as follows</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>mat<span class="fl">.1300</span> <span class="ot">&lt;-</span> <span class="fu">nb2mat</span>(nb<span class="fl">.1300</span>,<span class="at">style=</span><span class="st">&quot;W&quot;</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>W <span class="ot">&lt;-</span> <span class="fu">as</span>(mat<span class="fl">.1300</span>,<span class="st">&quot;dgCMatrix&quot;</span>)</span></code></pre></div>
+<p>For the W matrix, we can check the neighbours statistics</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>nb<span class="fl">.1300</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="do">## Neighbour list object:</span></span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="do">## Number of regions: 1000 </span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="do">## Number of nonzero links: 170254 </span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="do">## Percentage nonzero weights: 17.0254 </span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="do">## Average number of links: 170.254</span></span></code></pre></div>
+</div>
+<div id="run-the-models" class="section level3">
+<h3>Run the models</h3>
+<p>So, having ready the matrices Delta, M and W, we wun the
+<code>hsar()</code> function</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>res.formula <span class="ot">&lt;-</span> prpsqm <span class="sc">~</span> size <span class="sc">+</span> age <span class="sc">+</span> greensp <span class="sc">+</span> population <span class="sc">+</span> museums <span class="sc">+</span> airbnb</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">hsar</span>(res.formula,<span class="at">data=</span>model.data,<span class="at">W=</span>W,<span class="at">M=</span>M,<span class="at">Delta=</span>Delta,</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>            <span class="at">burnin=</span><span class="dv">500</span>, <span class="at">Nsim=</span><span class="dv">1000</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="do">## Warning in spdep::mat2listw(W): style is M (missing); style should be set to a valid value</span></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="do">## Warning in sn2listw(df, style = style, zero.policy = zero.policy, from_mat2listw = TRUE):</span></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="do">## style is M (missing); style should be set to a valid value</span></span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="do">## Warning in spdep::mat2listw(W): style is M (missing); style should be set to a valid value</span></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="do">## Warning in sn2listw(df, style = style, zero.policy = zero.policy, from_mat2listw = TRUE):</span></span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="do">## style is M (missing); style should be set to a valid value</span></span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a><span class="fu">summary</span>(res)</span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a><span class="do">## Call:</span></span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="do">## hsar(formula = res.formula, data = model.data, W = W, M = M, </span></span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a><span class="do">##     Delta = Delta, burnin = 500, Nsim = 1000)</span></span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a><span class="do">## Type:  hsar  </span></span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a><span class="do">## Coefficients:</span></span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a><span class="do">##                      Mean           SD</span></span>
+<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a><span class="do">## (Intercept)  1.880468e+03 9.835447e+00</span></span>
+<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a><span class="do">## size         4.298802e+00 5.112041e-01</span></span>
+<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a><span class="do">## age         -1.995687e+01 1.304370e+00</span></span>
+<span id="cb16-22"><a href="#cb16-22" tabindex="-1"></a><span class="do">## greensp      8.404794e-04 8.738884e-04</span></span>
+<span id="cb16-23"><a href="#cb16-23" tabindex="-1"></a><span class="do">## population  -9.940391e-03 2.273935e-03</span></span>
+<span id="cb16-24"><a href="#cb16-24" tabindex="-1"></a><span class="do">## museums     -4.515772e+01 1.008513e+01</span></span>
+<span id="cb16-25"><a href="#cb16-25" tabindex="-1"></a><span class="do">## airbnb       6.022747e-01 2.496115e-01</span></span>
+<span id="cb16-26"><a href="#cb16-26" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb16-27"><a href="#cb16-27" tabindex="-1"></a><span class="do">##  Spatial Coefficients:</span></span>
+<span id="cb16-28"><a href="#cb16-28" tabindex="-1"></a><span class="do">##           rho   lambda</span></span>
+<span id="cb16-29"><a href="#cb16-29" tabindex="-1"></a><span class="do">## [1,] 0.196536 0.018432</span></span>
+<span id="cb16-30"><a href="#cb16-30" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb16-31"><a href="#cb16-31" tabindex="-1"></a><span class="do">##  Diagnostics </span></span>
+<span id="cb16-32"><a href="#cb16-32" tabindex="-1"></a><span class="do">## Deviance information criterion (DIC): 28193.01 </span></span>
+<span id="cb16-33"><a href="#cb16-33" tabindex="-1"></a><span class="do">## Effective number of parameters (pd): -1.66553 </span></span>
+<span id="cb16-34"><a href="#cb16-34" tabindex="-1"></a><span class="do">## Log likelihood: -14098.17 </span></span>
+<span id="cb16-35"><a href="#cb16-35" tabindex="-1"></a><span class="do">## Pseudo R squared: 0.3601049 </span></span>
+<span id="cb16-36"><a href="#cb16-36" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb16-37"><a href="#cb16-37" tabindex="-1"></a><span class="do">##  Impacts:</span></span>
+<span id="cb16-38"><a href="#cb16-38" tabindex="-1"></a><span class="do">##                    direct      indirect         total</span></span>
+<span id="cb16-39"><a href="#cb16-39" tabindex="-1"></a><span class="do">## (Intercept)  1.881082e+03  4.592335e+02  2.340316e+03</span></span>
+<span id="cb16-40"><a href="#cb16-40" tabindex="-1"></a><span class="do">## size         4.300207e+00  1.049821e+00  5.350028e+00</span></span>
+<span id="cb16-41"><a href="#cb16-41" tabindex="-1"></a><span class="do">## age         -1.996339e+01 -4.873715e+00 -2.483711e+01</span></span>
+<span id="cb16-42"><a href="#cb16-42" tabindex="-1"></a><span class="do">## greensp      8.407540e-04  2.052555e-04  1.046009e-03</span></span>
+<span id="cb16-43"><a href="#cb16-43" tabindex="-1"></a><span class="do">## population  -9.943639e-03 -2.427567e-03 -1.237121e-02</span></span>
+<span id="cb16-44"><a href="#cb16-44" tabindex="-1"></a><span class="do">## museums     -4.517248e+01 -1.102808e+01 -5.620055e+01</span></span>
+<span id="cb16-45"><a href="#cb16-45" tabindex="-1"></a><span class="do">## airbnb       6.024715e-01  1.470830e-01  7.495545e-01</span></span>
+<span id="cb16-46"><a href="#cb16-46" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb16-47"><a href="#cb16-47" tabindex="-1"></a><span class="do">##  Quantiles:</span></span>
+<span id="cb16-48"><a href="#cb16-48" tabindex="-1"></a><span class="do">##                        5%           25%           50%           75%           95%</span></span>
+<span id="cb16-49"><a href="#cb16-49" tabindex="-1"></a><span class="do">## (Intercept)  1.864369e+03  1.874059e+03  1.880361e+03  1.887328e+03  1.896080e+03</span></span>
+<span id="cb16-50"><a href="#cb16-50" tabindex="-1"></a><span class="do">## size         3.436255e+00  3.956910e+00  4.291712e+00  4.628642e+00  5.155081e+00</span></span>
+<span id="cb16-51"><a href="#cb16-51" tabindex="-1"></a><span class="do">## age         -2.215863e+01 -2.075471e+01 -1.991798e+01 -1.911688e+01 -1.792525e+01</span></span>
+<span id="cb16-52"><a href="#cb16-52" tabindex="-1"></a><span class="do">## greensp     -3.546526e-04  2.905312e-04  7.376810e-04  1.261277e-03  2.657171e-03</span></span>
+<span id="cb16-53"><a href="#cb16-53" tabindex="-1"></a><span class="do">## population  -1.382163e-02 -1.159143e-02 -9.920309e-03 -8.353503e-03 -6.404121e-03</span></span>
+<span id="cb16-54"><a href="#cb16-54" tabindex="-1"></a><span class="do">## museums     -6.148110e+01 -5.224350e+01 -4.495013e+01 -3.850940e+01 -2.847943e+01</span></span>
+<span id="cb16-55"><a href="#cb16-55" tabindex="-1"></a><span class="do">## airbnb       1.776907e-01  4.578970e-01  6.114716e-01  7.457536e-01  1.010643e+00</span></span></code></pre></div>
+<p>and the two simpler models defined for rho = 0 and lambda=0. So,
+firstly, assuming rho = 0 (no interaction effects at the lower level) we
+get</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>res_1 <span class="ot">&lt;-</span> <span class="fu">hsar</span>(res.formula,<span class="at">data=</span>model.data,<span class="at">W=</span><span class="cn">NULL</span>,<span class="at">M=</span>M,<span class="at">Delta=</span>Delta,<span class="at">burnin=</span><span class="dv">500</span>, <span class="at">Nsim=</span><span class="dv">1000</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="do">## Warning in spdep::mat2listw(W): style is M (missing); style should be set to a valid value</span></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="do">## Warning in sn2listw(df, style = style, zero.policy = zero.policy, from_mat2listw = TRUE):</span></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="do">## style is M (missing); style should be set to a valid value</span></span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="fu">summary</span>(res_1)</span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="do">## Call:</span></span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a><span class="do">## hsar(formula = res.formula, data = model.data, W = NULL, M = M, </span></span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="do">##     Delta = Delta, burnin = 500, Nsim = 1000)</span></span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a><span class="do">## Type:  hsar with rho = 0  </span></span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="do">## Coefficients:</span></span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="do">##                      Mean           SD</span></span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a><span class="do">## (Intercept)  1.880592e+03 1.010450e+01</span></span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a><span class="do">## size         4.329009e+00 4.214029e-01</span></span>
+<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a><span class="do">## age         -2.004845e+01 1.258780e+00</span></span>
+<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a><span class="do">## greensp      6.812935e-04 6.843458e-04</span></span>
+<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a><span class="do">## population  -6.877688e-03 1.100394e-03</span></span>
+<span id="cb17-19"><a href="#cb17-19" tabindex="-1"></a><span class="do">## museums     -4.585817e+01 9.479326e+00</span></span>
+<span id="cb17-20"><a href="#cb17-20" tabindex="-1"></a><span class="do">## airbnb       6.288388e-01 2.222552e-01</span></span>
+<span id="cb17-21"><a href="#cb17-21" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb17-22"><a href="#cb17-22" tabindex="-1"></a><span class="do">##  Spatial Coefficients:</span></span>
+<span id="cb17-23"><a href="#cb17-23" tabindex="-1"></a><span class="do">##    lambda </span></span>
+<span id="cb17-24"><a href="#cb17-24" tabindex="-1"></a><span class="do">## -0.130888 </span></span>
+<span id="cb17-25"><a href="#cb17-25" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb17-26"><a href="#cb17-26" tabindex="-1"></a><span class="do">##  Diagnostics </span></span>
+<span id="cb17-27"><a href="#cb17-27" tabindex="-1"></a><span class="do">## Deviance information criterion (DIC): 28196.24 </span></span>
+<span id="cb17-28"><a href="#cb17-28" tabindex="-1"></a><span class="do">## Effective number of parameters (pd): -1.988165 </span></span>
+<span id="cb17-29"><a href="#cb17-29" tabindex="-1"></a><span class="do">## Log likelihood: -14100.11 </span></span>
+<span id="cb17-30"><a href="#cb17-30" tabindex="-1"></a><span class="do">## Pseudo R squared: 0.3587056 </span></span>
+<span id="cb17-31"><a href="#cb17-31" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb17-32"><a href="#cb17-32" tabindex="-1"></a><span class="do">##  Quantiles:</span></span>
+<span id="cb17-33"><a href="#cb17-33" tabindex="-1"></a><span class="do">##                        5%           25%           50%           75%           95%</span></span>
+<span id="cb17-34"><a href="#cb17-34" tabindex="-1"></a><span class="do">## (Intercept)  1.863327e+03  1.874280e+03  1.880446e+03  1.887451e+03  1.897526e+03</span></span>
+<span id="cb17-35"><a href="#cb17-35" tabindex="-1"></a><span class="do">## size         3.648867e+00  4.026734e+00  4.331703e+00  4.647616e+00  5.040309e+00</span></span>
+<span id="cb17-36"><a href="#cb17-36" tabindex="-1"></a><span class="do">## age         -2.217344e+01 -2.090501e+01 -2.002926e+01 -1.916105e+01 -1.800675e+01</span></span>
+<span id="cb17-37"><a href="#cb17-37" tabindex="-1"></a><span class="do">## greensp     -5.464395e-04  3.468840e-04  7.498473e-04  1.081365e-03  1.660609e-03</span></span>
+<span id="cb17-38"><a href="#cb17-38" tabindex="-1"></a><span class="do">## population  -8.718853e-03 -7.542340e-03 -6.897453e-03 -6.200430e-03 -4.988964e-03</span></span>
+<span id="cb17-39"><a href="#cb17-39" tabindex="-1"></a><span class="do">## museums     -6.078241e+01 -5.205170e+01 -4.542701e+01 -3.995038e+01 -3.145765e+01</span></span>
+<span id="cb17-40"><a href="#cb17-40" tabindex="-1"></a><span class="do">## airbnb       2.844778e-01  4.953275e-01  6.164306e-01  7.496283e-01  9.872352e-01</span></span></code></pre></div>
+<p>and secondly, given lambda = 0 (no interaction at the higher level)
+we get</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>res_2 <span class="ot">&lt;-</span> <span class="fu">hsar</span>(res.formula,<span class="at">data=</span>model.data,<span class="at">W=</span>W,<span class="at">M=</span><span class="cn">NULL</span>,<span class="at">Delta=</span>Delta,<span class="at">burnin=</span><span class="dv">500</span>, <span class="at">Nsim=</span><span class="dv">1000</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="do">## Warning in spdep::mat2listw(W): style is M (missing); style should be set to a valid value</span></span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a><span class="do">## Warning in sn2listw(df, style = style, zero.policy = zero.policy, from_mat2listw = TRUE):</span></span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="do">## style is M (missing); style should be set to a valid value</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="fu">summary</span>(res_2)</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a><span class="do">## Call:</span></span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a><span class="do">## hsar(formula = res.formula, data = model.data, W = W, M = NULL, </span></span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a><span class="do">##     Delta = Delta, burnin = 500, Nsim = 1000)</span></span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a><span class="do">## Type:  hsar with lambda = 0  </span></span>
+<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a><span class="do">## Coefficients:</span></span>
+<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a><span class="do">##                      Mean           SD</span></span>
+<span id="cb18-14"><a href="#cb18-14" tabindex="-1"></a><span class="do">## (Intercept)  1.880293e+03 9.970170e+00</span></span>
+<span id="cb18-15"><a href="#cb18-15" tabindex="-1"></a><span class="do">## size         4.271588e+00 4.581010e-01</span></span>
+<span id="cb18-16"><a href="#cb18-16" tabindex="-1"></a><span class="do">## age         -1.995568e+01 1.295576e+00</span></span>
+<span id="cb18-17"><a href="#cb18-17" tabindex="-1"></a><span class="do">## greensp      9.672711e-04 6.581401e-04</span></span>
+<span id="cb18-18"><a href="#cb18-18" tabindex="-1"></a><span class="do">## population  -9.434666e-03 2.083913e-03</span></span>
+<span id="cb18-19"><a href="#cb18-19" tabindex="-1"></a><span class="do">## museums     -4.545286e+01 1.035321e+01</span></span>
+<span id="cb18-20"><a href="#cb18-20" tabindex="-1"></a><span class="do">## airbnb       5.415177e-01 1.964108e-01</span></span>
+<span id="cb18-21"><a href="#cb18-21" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb18-22"><a href="#cb18-22" tabindex="-1"></a><span class="do">##  Spatial Coefficients:</span></span>
+<span id="cb18-23"><a href="#cb18-23" tabindex="-1"></a><span class="do">##     rho </span></span>
+<span id="cb18-24"><a href="#cb18-24" tabindex="-1"></a><span class="do">## 0.19122 </span></span>
+<span id="cb18-25"><a href="#cb18-25" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb18-26"><a href="#cb18-26" tabindex="-1"></a><span class="do">##  Diagnostics </span></span>
+<span id="cb18-27"><a href="#cb18-27" tabindex="-1"></a><span class="do">## Deviance information criterion (DIC): 28196.99 </span></span>
+<span id="cb18-28"><a href="#cb18-28" tabindex="-1"></a><span class="do">## Effective number of parameters (pd): -1.752399 </span></span>
+<span id="cb18-29"><a href="#cb18-29" tabindex="-1"></a><span class="do">## Log likelihood: -14100.25 </span></span>
+<span id="cb18-30"><a href="#cb18-30" tabindex="-1"></a><span class="do">## Pseudo R squared: 0.3597633 </span></span>
+<span id="cb18-31"><a href="#cb18-31" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb18-32"><a href="#cb18-32" tabindex="-1"></a><span class="do">##  Quantiles:</span></span>
+<span id="cb18-33"><a href="#cb18-33" tabindex="-1"></a><span class="do">##                        5%           25%           50%           75%           95%</span></span>
+<span id="cb18-34"><a href="#cb18-34" tabindex="-1"></a><span class="do">## (Intercept)  1.864332e+03  1.873364e+03  1.880298e+03  1.886796e+03  1.896416e+03</span></span>
+<span id="cb18-35"><a href="#cb18-35" tabindex="-1"></a><span class="do">## size         3.550689e+00  3.944261e+00  4.254099e+00  4.559823e+00  5.073155e+00</span></span>
+<span id="cb18-36"><a href="#cb18-36" tabindex="-1"></a><span class="do">## age         -2.192657e+01 -2.079846e+01 -1.995871e+01 -1.909676e+01 -1.780104e+01</span></span>
+<span id="cb18-37"><a href="#cb18-37" tabindex="-1"></a><span class="do">## greensp      3.886899e-05  5.256176e-04  8.835621e-04  1.378462e-03  2.197482e-03</span></span>
+<span id="cb18-38"><a href="#cb18-38" tabindex="-1"></a><span class="do">## population  -1.282486e-02 -1.074985e-02 -9.589800e-03 -8.107401e-03 -6.107883e-03</span></span>
+<span id="cb18-39"><a href="#cb18-39" tabindex="-1"></a><span class="do">## museums     -6.271483e+01 -5.293104e+01 -4.448211e+01 -3.801137e+01 -2.948482e+01</span></span>
+<span id="cb18-40"><a href="#cb18-40" tabindex="-1"></a><span class="do">## airbnb       2.208243e-01  4.100049e-01  5.411334e-01  6.705060e-01  8.635070e-01</span></span></code></pre></div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

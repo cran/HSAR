@@ -1,18 +1,13 @@
-citHeader("To cite HSAR in publications use:")
+citHeader("To cite HSAR Package in publications use:")
 
-citEntry(entry = "proceedings",
-  title        = "HSAR: An R Package for Integrated Spatial Econometric and Multilevel Modelling",
-  author       = personList(as.person("Guanpeng Dong"),
-                   as.person("Richard Harris"),
-                   as.person("Angelos Mimis")),
-  year         = "2016",
-  publisher    = "GISRUK",
-  institution  = "University of Greenwich",
-
-  textVersion  =
-  paste("Guanpeng Dong, Richard Harris and Angelos Mimis (2016).",
-        "HSAR: An R Package for Integrated Spatial Econometric and Multilevel Modelling.",
-        "GIS Research UK 2016 (GISRUK2016) held at the Faculty of Architecture, Computing and Humanities., University of Greenwich, on 30th March -1st April 2016.")
-)
-
-
+bibentry(
+ bibtype="Article",
+ title="Spatial Autoregressive Models for Geographically Hierarchical Data Structures",
+ journal="Geographical Analysis",
+ volume="47",
+ number="2",
+ pages="173–191",
+ year="2014",
+ publisher="Wiley",
+ author="Dong, Guanpeng and Harris, Richard",
+ doi="10.1111/gean.12049")
